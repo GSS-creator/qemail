@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* QSSN Email System - 3D Holographic Design System */
+
+@layer base {
+  :root {
+    /* 3D Email System Color Palette */
+    --background: 220 25% 8%;
+    --foreground: 210 40% 98%;
+
+    /* Holographic Glass Effects */
+    --glass-primary: 217 100% 50%;
+    --glass-secondary: 280 100% 70%;
+    --glass-accent: 160 100% 50%;
+    --glass-background: 220 25% 10%;
+    --glass-surface: 220 20% 15%;
+
+    /* 3D Theme Colors */
+    --primary: 217 100% 50%;
+    --primary-foreground: 210 40% 98%;
+    --primary-glow: 217 80% 60%;
+
+    --secondary: 280 100% 70%;
+    --secondary-foreground: 210 40% 98%;
+    --secondary-glow: 280 80% 80%;
+
+    --accent: 160 100% 50%;
+    --accent-foreground: 220 25% 10%;
+    --accent-glow: 160 80% 60%;
+
+    /* Email Interface Colors */
+    --email-read: 220 15% 25%;
+    --email-unread: 217 100% 50%;
+    --email-selected: 280 100% 70%;
+    --email-hover: 220 20% 20%;
+
+    /* Status Colors */
+    --success: 120 100% 40%;
+    --warning: 45 100% 50%;
+    --danger: 0 100% 50%;
+    --info: 200 100% 50%;
+
+    /* Surface & Borders */
+    --card: 220 20% 15%;
+    --card-foreground: 210 40% 98%;
+    --border: 220 15% 25%;
+    --input: 220 20% 18%;
+    --ring: 217 100% 50%;
+    --muted: 220 15% 20%;
+    --muted-foreground: 220 10% 60%;
+
+    /* 3D Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 100% 50%), hsl(280 100% 70%));
+    --gradient-secondary: linear-gradient(135deg, hsl(280 100% 70%), hsl(160 100% 50%));
+    --gradient-accent: linear-gradient(135deg, hsl(160 100% 50%), hsl(217 100% 50%));
+    --gradient-background: linear-gradient(135deg, hsl(220 25% 8%), hsl(220 30% 12%));
+    --gradient-glass: linear-gradient(135deg, 
+      hsla(217 100% 50% / 0.1), 
+      hsla(280 100% 70% / 0.1), 
+      hsla(160 100% 50% / 0.1));
+
+    /* 3D Shadows & Effects */
+    --shadow-3d: 0 10px 30px -10px hsl(217 100% 50% / 0.3),
+                 0 0 40px hsl(217 100% 50% / 0.2),
+                 inset 0 1px 0 hsl(217 100% 50% / 0.1);
+    --shadow-glow: 0 0 40px hsl(217 100% 50% / 0.4);
+    --shadow-email: 0 5px 15px -5px hsl(220 25% 8% / 0.3);
+    --shadow-hover: 0 15px 35px -10px hsl(217 100% 50% / 0.4);
+
+    /* Animation Variables */
+    --transition-3d: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+
+    --radius: 1rem;
+    --radius-lg: 1.5rem;
+    --radius-xl: 2rem;
+
+    /* Sidebar variables for compatibility */
+    --sidebar-background: 220 20% 15%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 217 100% 50%;
+    --sidebar-primary-foreground: 210 40% 98%;
+    --sidebar-accent: 220 15% 25%;
+    --sidebar-accent-foreground: 210 40% 98%;
+    --sidebar-border: 220 15% 25%;
+    --sidebar-ring: 217 100% 50%;
+
+    /* Popover variables for compatibility */
+    --popover: 220 20% 15%;
+    --popover-foreground: 210 40% 98%;
+
+    /* Destructive variables for compatibility */
+    --destructive: 0 100% 50%;
+    --destructive-foreground: 210 40% 98%;
+  }
+
+  /* Blue Theme */
+  .theme-blue {
+    --primary: 210 100% 50%;
+    --primary-glow: 210 80% 60%;
+    --secondary: 200 100% 70%;
+    --secondary-glow: 200 80% 80%;
+    --gradient-primary: linear-gradient(135deg, hsl(210 100% 50%), hsl(200 100% 70%));
+    --shadow-3d: 0 10px 30px -10px hsl(210 100% 50% / 0.3),
+                 0 0 40px hsl(210 100% 50% / 0.2);
+  }
+
+  /* Red Theme */
+  .theme-red {
+    --primary: 0 100% 50%;
+    --primary-glow: 0 80% 60%;
+    --secondary: 330 100% 70%;
+    --secondary-glow: 330 80% 80%;
+    --gradient-primary: linear-gradient(135deg, hsl(0 100% 50%), hsl(330 100% 70%));
+    --shadow-3d: 0 10px 30px -10px hsl(0 100% 50% / 0.3),
+                 0 0 40px hsl(0 100% 50% / 0.2);
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: var(--gradient-background);
+    min-height: 100vh;
+    font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  }
+
+  /* 3D Glass Morphism Base */
+  .glass-surface {
+    background: hsla(220 20% 15% / 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid hsla(217 100% 50% / 0.2);
+    box-shadow: var(--shadow-3d);
+  }
+
+  .glass-hover {
+    transition: var(--transition-3d);
+  }
+
+  .glass-hover:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: var(--shadow-hover);
+    border-color: hsla(217 100% 50% / 0.4);
+  }
+
+  /* 3D Animations */
+  @keyframes floating {
+    0%, 100% { transform: translateY(0) rotate(0deg); }
+    50% { transform: translateY(-10px) rotate(2deg); }
+  }
+
+  @keyframes pulse-glow {
+    0%, 100% { box-shadow: 0 0 20px hsl(217 100% 50% / 0.3); }
+    50% { box-shadow: 0 0 40px hsl(217 100% 50% / 0.6); }
+  }
+
+  @keyframes holographic {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  @keyframes slideInFromSpace {
+    0% { 
+      opacity: 0; 
+      transform: translateZ(-100px) rotateX(45deg) scale(0.8); 
+    }
+    100% { 
+      opacity: 1; 
+      transform: translateZ(0) rotateX(0deg) scale(1); 
+    }
+  }
+
+  .animate-floating {
+    animation: floating 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2s ease-in-out infinite;
+  }
+
+  .animate-holographic {
+    background-size: 400% 400%;
+    animation: holographic 3s ease infinite;
+  }
+
+  .animate-slide-in-3d {
+    animation: slideInFromSpace 0.6s ease-out forwards;
+  }
+
+  /* Gradient Text Utility */
+  .bg-gradient-primary {
+    background: var(--gradient-primary);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  /* Email-specific 3D effects */
+  .email-item-3d {
+    transform-style: preserve-3d;
+    transition: var(--transition-3d);
+  }
+
+  .email-item-3d:hover {
+    transform: translateZ(10px) rotateX(5deg);
+  }
+
+  .folder-3d {
+    perspective: 1000px;
+    transform-style: preserve-3d;
+  }
+
+  .folder-3d:hover {
+    transform: rotateY(10deg) translateZ(20px);
+  }
+}
