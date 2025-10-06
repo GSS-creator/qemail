@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 import { Eye, EyeOff, Mail, Lock, User, Sparkles } from 'lucide-react';
 import ParticleSystem from './3D/ParticleSystem';
 import HolographicCard from './3D/HolographicCard';
+import NeuralNetwork3D from './3D/NeuralNetwork3D';
 import qssnLogo from '@/assets/qssn-logo.jpg';
 import holographicBg from '@/assets/holographic-bg.jpg';
 
@@ -233,6 +234,11 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
       {/* Particle System */}
       <ParticleSystem count={30} className="opacity-70" />
 
+      {/* 3D Neural Network Animation */}
+      <div className="absolute inset-0 z-0">
+        <NeuralNetwork3D />
+      </div>
+
       {/* Animated Background */}
       <div className="absolute inset-0 bg-gradient-background">
         <div className="absolute inset-0 opacity-20">
@@ -252,10 +258,10 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
         </div>
       </div>
 
-      <div className="flex max-w-6xl w-full relative z-10 gap-8">
-        {/* Login Form */}
-        <HolographicCard className="w-full max-w-md animate-slide-in-3d" intensity={1.2}>
-          <CardHeader className="text-center space-y-4">
+      <div className="flex max-w-6xl w-full relative z-10 gap-8 login-container">
+        {/* Login/Register Card */}
+        <HolographicCard className="w-full max-w-md animate-slide-in-3d login-form-card neural-glow" intensity={1.2}>
+          <CardHeader className="text-center space-y-4 login-header">
             {/* App Icon */}
             <div className="flex items-center justify-center mb-4">
               <img 
@@ -280,7 +286,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
           </CardHeader>
           
           <CardContent>
-            <form onSubmit={handleAuth} className="space-y-6">
+            <form onSubmit={handleAuth} className="space-y-6 login-form">
               {isRecoveryMode ? (
                 // Recovery Mode UI
                 <div className="space-y-4">
@@ -307,7 +313,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                               placeholder="Username or Email"
                               value={recoveryUsername}
                               onChange={(e) => setRecoveryUsername(e.target.value)}
-                              className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow"
+                              className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow login-input"
                               required
                             />
                           </div>
@@ -318,7 +324,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                               placeholder="Recovery Email"
                               value={recoveryEmail}
                               onChange={(e) => setRecoveryEmail(e.target.value)}
-                              className="pl-10 glass-surface border-secondary/20 focus:border-secondary focus:shadow-glow"
+                              className="pl-10 glass-surface border-secondary/20 focus:border-secondary focus:shadow-glow login-input"
                               required
                             />
                           </div>
@@ -333,7 +339,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                               placeholder="Enter OTP Code"
                               value={otpCode}
                               onChange={(e) => setOtpCode(e.target.value)}
-                              className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow"
+                              className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow login-input"
                               required
                             />
                           </div>
@@ -344,7 +350,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                               placeholder="New Password"
                               value={newPassword}
                               onChange={(e) => setNewPassword(e.target.value)}
-                              className="pl-10 glass-surface border-accent/20 focus:border-accent focus:shadow-glow"
+                              className="pl-10 glass-surface border-accent/20 focus:border-accent focus:shadow-glow login-input"
                               required
                             />
                           </div>
@@ -355,7 +361,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                               placeholder="Confirm New Password"
                               value={confirmPassword}
                               onChange={(e) => setConfirmPassword(e.target.value)}
-                              className="pl-10 glass-surface border-accent/20 focus:border-accent focus:shadow-glow"
+                              className="pl-10 glass-surface border-accent/20 focus:border-accent focus:shadow-glow login-input"
                               required
                             />
                           </div>
@@ -398,7 +404,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
 
                   <Button 
                     type="submit" 
-                    className="w-full glass-surface bg-gradient-primary hover:shadow-hover transform hover:scale-105 transition-all duration-300"
+                    className="w-full glass-surface bg-gradient-primary hover:shadow-hover transform hover:scale-105 transition-all duration-300 login-button"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -413,7 +419,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                       type="button"
                       variant="ghost"
                       onClick={exitRecoveryMode}
-                      className="text-primary hover:text-primary-glow hover:bg-primary/10"
+                      className="text-primary hover:text-primary-glow hover:bg-primary/10 login-button"
                     >
                       Back to Login
                     </Button>
@@ -429,7 +435,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                       placeholder="Username"
                       value={username}
                       onChange={(e) => setUsername(e.target.value)}
-                      className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow"
+                      className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow login-input"
                       required
                     />
                   </div>
@@ -443,7 +449,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                       placeholder="Password"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      className="pl-10 pr-12 glass-surface border-accent/20 focus:border-accent focus:shadow-glow"
+                      className="pl-10 pr-12 glass-surface border-accent/20 focus:border-accent focus:shadow-glow login-input"
                       required
                     />
                     <button
@@ -456,12 +462,12 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                   </div>
 
                   {isLogin && (
-                    <div className="flex justify-between text-sm">
+                    <div className="flex justify-between text-sm recovery-buttons">
                       <Button
                         type="button"
                         variant="ghost"
                         onClick={() => enterRecoveryMode('password')}
-                        className="text-primary hover:text-primary-glow hover:bg-primary/10 p-0 h-auto"
+                        className="text-primary hover:text-primary-glow hover:bg-primary/10 p-0 h-auto login-button"
                       >
                         Forgot Password?
                       </Button>
@@ -469,7 +475,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                         type="button"
                         variant="ghost"
                         onClick={() => enterRecoveryMode('email')}
-                        className="text-secondary hover:text-accent hover:bg-secondary/10 p-0 h-auto"
+                        className="text-secondary hover:text-accent hover:bg-secondary/10 p-0 h-auto login-button"
                       >
                         Recover QSSN Email
                       </Button>
@@ -481,16 +487,16 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                       id="terms"
                       checked={agreeToTerms}
                       onCheckedChange={(checked) => setAgreeToTerms(checked as boolean)}
-                      className="border-primary data-[state=checked]:bg-primary"
+                      className="border-primary data-[state=checked]:bg-primary login-checkbox"
                     />
-                    <label htmlFor="terms" className="text-sm text-muted-foreground">
+                    <label htmlFor="terms" className="text-sm text-muted-foreground login-terms-label">
                       I agree to the Terms of Use
                     </label>
                   </div>
 
                   <Button 
                     type="submit" 
-                    className="w-full glass-surface bg-gradient-primary hover:shadow-hover transform hover:scale-105 transition-all duration-300"
+                    className="w-full glass-surface bg-gradient-primary hover:shadow-hover transform hover:scale-105 transition-all duration-300 login-button"
                     disabled={isLoading}
                   >
                     {isLoading ? (
@@ -505,7 +511,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                       type="button"
                       variant="ghost"
                       onClick={toggleMode}
-                      className="text-primary hover:text-primary-glow hover:bg-primary/10"
+                      className="text-primary hover:text-primary-glow hover:bg-primary/10 login-button"
                     >
                       {isLogin ? 'Need an account? Register' : 'Have an account? Login'}
                     </Button>
@@ -517,7 +523,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
         </HolographicCard>
 
         {/* Terms of Use Panel */}
-        <HolographicCard className="w-full max-w-lg animate-slide-in-3d" style={{ animationDelay: '0.2s' }} intensity={0.8}>
+        <HolographicCard className="w-full max-w-lg animate-slide-in-3d neural-glow" style={{ animationDelay: '0.2s' }} intensity={0.8}>
           <CardHeader>
             <CardTitle className="text-xl bg-gradient-secondary bg-clip-text text-transparent">
               Terms of Use
