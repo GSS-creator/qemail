@@ -12,6 +12,12 @@ const Index = () => {
     setIsAuthenticated(true);
     setUsername(user);
     setAuthToken(token);
+    // Set the auth token in the API service
+    import('@/services/api').then(({ qemailApi }) => {
+      qemailApi.setToken(token);
+    }).catch((error) => {
+      console.error('Failed to set auth token:', error);
+    });
     toast.success(`Welcome to QSSN Email System, ${user}!`);
   };
 
@@ -27,7 +33,7 @@ const Index = () => {
       {!isAuthenticated ? (
         <LoginWindow onLogin={handleLogin} />
       ) : (
-        <EmailInterface username={username} onLogout={handleLogout} />
+        <EmailInterface username={username} authToken={authToken} onLogout={handleLogout} />
       )}
     </div>
   );

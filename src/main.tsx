@@ -29,10 +29,14 @@ window.fetch = (input: RequestInfo | URL, init?: RequestInit) => {
   return originalFetch(nextReq)
 }
 
-// Check for existing server URL in localStorage
+// Set the database server URL
+const dbServerUrl = 'https://qssn-d1-api.gastonsoftwaresolutions234.workers.dev'
+qemailApi.setBaseUrl(dbServerUrl)
+
+// Check for existing server URL in localStorage, but prioritize the database server URL
 const savedServerUrl = localStorage.getItem('qos-server-url')
-if (savedServerUrl) {
-  qemailApi.setBaseUrl(savedServerUrl)
+if (savedServerUrl && savedServerUrl !== dbServerUrl) {
+  console.log('Using saved server URL from localStorage, but database operations will use:', dbServerUrl)
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

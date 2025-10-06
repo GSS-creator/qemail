@@ -106,7 +106,7 @@ const EmailList3D: React.FC<EmailList3DProps> = ({
                 key={email.id}
                 className={`
                   email-item-3d glass-hover cursor-pointer transition-all duration-300 p-4
-                  animate-slide-in-3d group relative overflow-hidden
+                  animate-slide-in-3d group relative overflow-hidden min-h-[80px]
                   ${isSelected 
                     ? 'glass-surface bg-gradient-primary shadow-glow border-primary' 
                     : `glass-surface border-primary/10 hover:border-primary/30 ${!email.isRead ? 'border-accent/30' : ''}`
@@ -117,15 +117,15 @@ const EmailList3D: React.FC<EmailList3DProps> = ({
               >
                 <div className="flex items-start space-x-3">
                   {/* Read Status & Priority */}
-                  <div className="flex flex-col items-center space-y-1 mt-1">
+                  <div className="flex flex-col items-center space-y-2 mt-1">
                     <div className={`
-                      w-2 h-2 rounded-full transition-all duration-300
+                      w-3 h-3 rounded-full transition-all duration-300
                       ${!email.isRead 
                         ? 'bg-accent animate-pulse-glow' 
                         : 'bg-muted-foreground/30'
                       }
                     `} />
-                    <PriorityIcon className={`w-3 h-3 ${getPriorityColor(email.priority)}`} />
+                    <PriorityIcon className={`w-4 h-4 ${getPriorityColor(email.priority)}`} />
                   </div>
 
                   {/* Email Content */}
@@ -133,18 +133,18 @@ const EmailList3D: React.FC<EmailList3DProps> = ({
                     <div className="flex items-center justify-between mb-1">
                       <div className="flex items-center space-x-2 min-w-0">
                         <span className={`
-                          font-medium truncate transition-colors duration-300
+                          font-medium truncate transition-colors duration-300 text-sm sm:text-base
                           ${isSelected ? 'text-white' : 'text-foreground group-hover:text-primary'}
                           ${!email.isRead ? 'font-semibold' : ''}
                         `}>
                           {email.from}
                         </span>
                         {email.isStarred && (
-                          <Star className="w-4 h-4 text-warning fill-current animate-pulse" />
+                          <Star className="w-5 h-5 text-warning fill-current animate-pulse" />
                         )}
                       </div>
                       <span className={`
-                        text-xs transition-colors duration-300 whitespace-nowrap ml-2
+                        text-xs sm:text-sm transition-colors duration-300 whitespace-nowrap ml-2
                         ${isSelected ? 'text-white/70' : 'text-muted-foreground'}
                       `}>
                         {formatDate(email.date)}
@@ -152,7 +152,7 @@ const EmailList3D: React.FC<EmailList3DProps> = ({
                     </div>
 
                     <h3 className={`
-                      text-sm font-medium mb-2 line-clamp-1 transition-colors duration-300
+                      text-sm sm:text-base font-medium mb-2 line-clamp-1 transition-colors duration-300
                       ${isSelected ? 'text-white' : 'text-foreground group-hover:text-primary'}
                       ${!email.isRead ? 'font-semibold' : ''}
                     `}>
@@ -160,7 +160,7 @@ const EmailList3D: React.FC<EmailList3DProps> = ({
                     </h3>
 
                     <p className={`
-                      text-xs line-clamp-2 transition-colors duration-300
+                      text-xs sm:text-sm line-clamp-2 transition-colors duration-300
                       ${isSelected ? 'text-white/70' : 'text-muted-foreground'}
                     `}>
                       {getPreviewText(email.content)}

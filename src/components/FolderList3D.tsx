@@ -1,6 +1,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { toast } from 'sonner';
 import { 
   Inbox, Send, FileText, Trash2, Archive, Star, 
   Shield, AlertTriangle, Folder, Sparkles 
@@ -50,18 +51,6 @@ const FolderList3D: React.FC<FolderList3DProps> = ({
       name: 'Starred', 
       icon: Star,
       color: 'warning'
-    },
-    { 
-      id: 'archive', 
-      name: 'Archive', 
-      icon: Archive,
-      color: 'info'
-    },
-    { 
-      id: 'spam', 
-      name: 'Spam', 
-      icon: Shield,
-      color: 'danger'
     },
     { 
       id: 'trash', 
@@ -141,7 +130,7 @@ const FolderList3D: React.FC<FolderList3DProps> = ({
         );
       })}
       
-      {/* Custom Folders Section */}
+      {/* Custom Labels Section - These will filter existing emails rather than call API */}
       <div className="pt-4 border-t border-primary/20">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
@@ -155,17 +144,24 @@ const FolderList3D: React.FC<FolderList3DProps> = ({
         {['Work', 'Personal', 'Important'].map((label, index) => (
           <Button
             key={label}
-            variant="ghost"
+            variant={currentFolder === label.toLowerCase() ? "default" : "ghost"}
             onClick={() => onFolderChange(label.toLowerCase())}
             className={`
-              w-full justify-start glass-hover group
-              ${currentFolder === label.toLowerCase() ? 'bg-accent/20 text-accent' : 'hover:bg-accent/10'}
-              animate-slide-in-3d
+              w-full justify-start glass-hover group animate-slide-in-3d
+              ${currentFolder === label.toLowerCase() ? 'glass-surface bg-gradient-primary shadow-glow' : 'hover:bg-primary/10'}
             `}
             style={{ animationDelay: `${(folders.length + index) * 0.1}s` }}
           >
-            <div className="w-3 h-3 rounded-full bg-accent mr-3 group-hover:animate-pulse" />
-            <span className="font-medium">{label}</span>
+            <div className={`
+              w-3 h-3 rounded-full mr-3 group-hover:animate-pulse
+              ${currentFolder === label.toLowerCase() ? 'bg-white/20' : 'bg-accent'}
+            `} />
+            <span className={`
+              font-medium transition-all duration-300
+              ${currentFolder === label.toLowerCase() ? 'text-white' : 'text-foreground group-hover:text-primary'}
+            `}>
+              {label}
+            </span>
           </Button>
         ))}
       </div>

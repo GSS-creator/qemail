@@ -8,8 +8,9 @@ import {
   Mail, Search, Settings, LogOut, Star, Archive, Trash2, 
   Reply, Forward, MoreHorizontal, Filter, Bell, User, 
   Folders, Inbox, Send, FileText, Shield, Palette,
-  PlusCircle, Sparkles, Zap, Moon, Sun
+  PlusCircle, Sparkles, Zap, Moon, Sun, ArrowLeft, X, Menu
 } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 // Theme styles
 const themeStyles = `
@@ -75,6 +76,7 @@ import TermsDialog3D from './TermsDialog3D';
 
 interface EmailInterfaceProps {
   username: string;
+  authToken: string;
   onLogout: () => void;
 }
 
@@ -91,7 +93,7 @@ interface Email {
   labels: string[];
 }
 
-const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) => {
+const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, onLogout }) => {
   const [currentFolder, setCurrentFolder] = useState('inbox');
   const [selectedEmail, setSelectedEmail] = useState<Email | null>(null);
   const [emails, setEmails] = useState<Email[]>([]);
@@ -103,6 +105,21 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
   const [theme, setTheme] = useState('default');
   const [unreadCount, setUnreadCount] = useState(0);
   const [chatHistory, setChatHistory] = useState<string[]>([]);
+  const [mobileView, setMobileView] = useState<'sidebar' | 'list' | 'viewer'>('list');
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+
+  const isMobile = useIsMobile();
+
+  // Set auth token when component mounts
+  useEffect(() => {
+    if (authToken) {
+      import('@/services/api').then(({ qemailApi }) => {
+        qemailApi.setToken(authToken);
+      }).catch((error) => {
+        console.error('Failed to set auth token:', error);
+      });
+    }
+  }, [authToken]);
 
   // Apply theme styles to document head and load saved theme
   useEffect(() => {
@@ -137,6 +154,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
   useEffect(() => {
     const loadFolder = async () => {
       try {
+        console.log('Loading emails from folder:', currentFolder)
         const { qemailApi } = await import('@/services/api')
         const serverEmails = await qemailApi.listEmails(currentFolder)
         console.log('Server response:', serverEmails)
@@ -162,7 +180,9 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
       } catch (e: any) {
         setEmails([])
         setUnreadCount(0)
-        toast.error('Failed to load emails from server')
+        console.error('Failed to load emails:', e)
+        const errorMessage = e.message || 'Failed to load emails from server'
+        toast.error(`Failed to load emails: ${errorMessage}`)
       }
     }
     loadFolder()
@@ -172,15 +192,47 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
     setCurrentFolder(folder);
     setSelectedEmail(null);
     toast.info(`Switched to ${folder} folder`);
+    
+    // On mobile, close sidebar and go to list view
+    if (isMobile) {
+      setShowMobileSidebar(false);
+      setMobileView('list');
+    }
   };
 
-  const handleEmailSelect = (email: Email) => {
+  const handleBackToList = () => {
+    setMobileView('list');
+    setSelectedEmail(null);
+  };
+
+  const toggleMobileSidebar = () => {
+    setShowMobileSidebar(!showMobileSidebar);
+  };
+
+  const handleEmailSelect = async (email: Email) => {
     setSelectedEmail(email);
+    
+    // On mobile, switch to viewer view after selecting an email
+    if (isMobile) {
+      setMobileView('viewer');
+    }
+    
+    // Mark email as read if it's unread
     if (!email.isRead) {
-      setEmails(prev => prev.map(e => 
-        e.id === email.id ? { ...e, isRead: true } : e
-      ));
-      setUnreadCount(prev => prev - 1);
+      try {
+        const { qemailApi } = await import('@/services/api')
+        await qemailApi.markEmailAsRead(email.id)
+        
+        // Update the email in the list to mark as read
+        setEmails(prevEmails => 
+          prevEmails.map(e => 
+            e.id === email.id ? { ...e, isRead: true } : e
+          )
+        )
+        setUnreadCount(prev => Math.max(0, prev - 1))
+      } catch (error) {
+        console.error('Failed to mark email as read:', error)
+      }
     }
   };
 
@@ -295,7 +347,21 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
       {/* Main Content */}
       <div className="flex-1 flex flex-col relative z-10">
         {/* Top Toolbar */}
-        <div className="h-16 glass-surface border-b border-primary/20 flex items-center px-6 space-x-4">
+        <div className="h-16 glass-surface border-b border-primary/20 flex items-center px-4 md:px-6 space-x-2 md:space-x-4">
+          {/* Mobile Menu Button */}
+          {isMobile && (
+            <Button variant="ghost" size="icon" onClick={toggleMobileSidebar} className="md:hidden">
+              <Menu className="w-5 h-5" />
+            </Button>
+          )}
+          
+          {/* Mobile Back Button (when in viewer) */}
+          {isMobile && mobileView === 'viewer' && (
+            <Button variant="ghost" size="icon" onClick={handleBackToList} className="md:hidden">
+              <ArrowLeft className="w-5 h-5" />
+            </Button>
+          )}
+
           <div className="flex items-center space-x-2">
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center animate-pulse-glow">
               <Mail className="w-4 h-4 text-white" />
@@ -311,16 +377,16 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
               placeholder="Search emails..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow"
+              className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow text-sm md:text-base"
             />
           </div>
 
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-1 md:space-x-2">
             <Button 
               variant="ghost" 
               size="icon" 
               onClick={() => setShowAdvancedSearch(true)}
-              className="glass-hover"
+              className="glass-hover hidden sm:inline-flex"
             >
               <Filter className="w-4 h-4" />
             </Button>
@@ -331,7 +397,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
               variant="ghost" 
               size="icon" 
               onClick={() => setShowSettings(true)}
-              className="glass-hover"
+              className="glass-hover hidden md:inline-flex"
             >
               <Settings className="w-4 h-4" />
             </Button>
@@ -340,8 +406,8 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
 
         {/* Content Area */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Email List */}
-          <div className="w-96 glass-surface border-r border-primary/20">
+          {/* Email List - Hidden on mobile when viewer is active */}
+          <div className={`${isMobile ? (mobileView === 'list' ? 'flex' : 'hidden') : 'flex'} w-full md:w-96 glass-surface md:border-r border-primary/20`}>
             <EmailList3D
               emails={filteredEmails}
               selectedEmail={selectedEmail}
@@ -350,15 +416,81 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, onLogout }) =
             />
           </div>
 
-          {/* Email Viewer */}
-          <div className="flex-1">
+          {/* Email Viewer - Hidden on mobile when list is active */}
+          <div className={`${isMobile ? (mobileView === 'viewer' ? 'flex' : 'hidden') : 'flex'} flex-1`}>
             <EmailViewer3D
               email={selectedEmail}
               onReply={() => toast.info('Reply functionality would open here')}
               onForward={() => toast.info('Forward functionality would open here')}
-              onStar={() => toast.success('Email starred!')}
-              onArchive={() => toast.success('Email archived!')}
-              onDelete={() => toast.success('Email deleted!')}
+              onStar={async () => {
+                if (selectedEmail) {
+                  try {
+                    const { qemailApi } = await import('@/services/api')
+                    await qemailApi.toggleEmailStar(selectedEmail.id)
+                    toast.success(selectedEmail.isStarred ? 'Email unstarred!' : 'Email starred!')
+                    // Refresh the email list to reflect the change
+                    const serverEmails = await qemailApi.listEmails(currentFolder)
+                    if (Array.isArray(serverEmails)) {
+                      const normalized: Email[] = serverEmails.map((e: any) => ({
+                        id: String(e.id),
+                        from: e.sender_name || e.from || 'Unknown',
+                        fromEmail: e.sender_email || 'unknown@gss-tec.qssn',
+                        subject: e.subject || '(no subject)',
+                        content: e.content || '',
+                        date: e.created_at || new Date().toISOString(),
+                        isRead: !!e.is_read,
+                        isStarred: !!e.is_starred,
+                        priority: 'normal',
+                        labels: []
+                      }))
+                      setEmails(normalized)
+                      setUnreadCount(normalized.filter(e => !e.isRead).length)
+                      // Update selected email if it still exists
+                      const updatedEmail = normalized.find(e => e.id === selectedEmail.id)
+                      if (updatedEmail) {
+                        setSelectedEmail(updatedEmail)
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Failed to toggle star:', error)
+                    toast.error('Failed to toggle star')
+                  }
+                }
+              }}
+              onArchive={async () => {
+                if (selectedEmail) {
+                  try {
+                    const { qemailApi } = await import('@/services/api')
+                    await qemailApi.toggleEmailArchive(selectedEmail.id)
+                    toast.success('Email archived!')
+                    // Remove from current list and select next email
+                    const updatedEmails = emails.filter(e => e.id !== selectedEmail.id)
+                    setEmails(updatedEmails)
+                    setUnreadCount(updatedEmails.filter(e => !e.isRead).length)
+                    setSelectedEmail(updatedEmails.length > 0 ? updatedEmails[0] : null)
+                  } catch (error) {
+                    console.error('Failed to archive email:', error)
+                    toast.error('Failed to archive email')
+                  }
+                }
+              }}
+              onDelete={async () => {
+                if (selectedEmail) {
+                  try {
+                    const { qemailApi } = await import('@/services/api')
+                    await qemailApi.deleteEmail(selectedEmail.id)
+                    toast.success('Email deleted!')
+                    // Remove from current list and select next email
+                    const updatedEmails = emails.filter(e => e.id !== selectedEmail.id)
+                    setEmails(updatedEmails)
+                    setUnreadCount(updatedEmails.filter(e => !e.isRead).length)
+                    setSelectedEmail(updatedEmails.length > 0 ? updatedEmails[0] : null)
+                  } catch (error) {
+                    console.error('Failed to delete email:', error)
+                    toast.error('Failed to delete email')
+                  }
+                }
+              }}
             />
           </div>
         </div>
