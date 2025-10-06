@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -23,6 +23,8 @@ interface Email {
 
 interface EmailViewer3DProps {
   email: Email | null;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
   onReply: () => void;
   onForward: () => void;
   onStar: () => void;
@@ -32,12 +34,26 @@ interface EmailViewer3DProps {
 
 const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
   email,
+  isFullscreen = false,
+  onToggleFullscreen,
   onReply,
   onForward,
   onStar,
   onArchive,
   onDelete
 }) => {
+  const [showTapIndicator, setShowTapIndicator] = useState(false);
+  const [showFullscreenHint, setShowFullscreenHint] = useState(false);
+
+  // Show fullscreen hint when entering fullscreen mode
+  useEffect(() => {
+    if (isFullscreen) {
+      setShowFullscreenHint(true);
+      const timer = setTimeout(() => setShowFullscreenHint(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isFullscreen]);
+
   if (!email) {
     return (
       <div className="h-full flex items-center justify-center bg-gradient-background relative overflow-hidden">
@@ -103,6 +119,13 @@ const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
 
   return (
     <div className="h-full flex flex-col bg-gradient-background relative overflow-hidden">
+      {/* Fullscreen Reading Hint */}
+      {isFullscreen && showFullscreenHint && (
+        <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50 bg-primary/90 text-primary-foreground px-4 py-2 rounded-lg text-sm animate-fade-in-out pointer-events-none">
+          Tap anywhere to exit fullscreen reading mode
+        </div>
+      )}
+      
       {/* Background Animation */}
       <div className="absolute inset-0 opacity-30">
         {[...Array(8)].map((_, i) => (
@@ -120,8 +143,8 @@ const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
         ))}
       </div>
 
-      {/* Toolbar */}
-      <div className="glass-surface border-b border-primary/20 p-4 relative z-10">
+      {/* Toolbar - Hidden in fullscreen mode */}
+      <div className={`glass-surface border-b border-primary/20 p-4 relative z-10 ${isFullscreen ? 'hidden' : ''}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Button
@@ -177,7 +200,19 @@ const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
       </div>
 
       {/* Email Content */}
-      <div className="flex-1 overflow-y-auto p-6 relative z-10">
+      <div 
+        className={`flex-1 overflow-y-auto relative z-10 ${isFullscreen ? 'p-2' : 'p-6'}`}
+        onClick={isFullscreen ? () => {
+          setShowTapIndicator(true);
+          setTimeout(() => setShowTapIndicator(false), 600);
+          if (onToggleFullscreen) onToggleFullscreen();
+        } : undefined}
+        style={{ cursor: isFullscreen ? 'pointer' : 'default' }}
+      >
+        {/* Tap Indicator */}
+        {isFullscreen && showTapIndicator && (
+          <div className="fullscreen-tap-indicator show" />
+        )}
         <Card className="glass-surface border-primary/20 animate-slide-in-3d">
           <CardHeader className="space-y-4">
             {/* Subject */}

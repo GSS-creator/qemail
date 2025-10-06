@@ -102,11 +102,13 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
   const [showSettings, setShowSettings] = useState(false);
   const [showAdvancedSearch, setShowAdvancedSearch] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
-  const [theme, setTheme] = useState('default');
   const [unreadCount, setUnreadCount] = useState(0);
   const [chatHistory, setChatHistory] = useState<string[]>([]);
   const [mobileView, setMobileView] = useState<'sidebar' | 'list' | 'viewer'>('list');
   const [showMobileSidebar, setShowMobileSidebar] = useState(false);
+  const [isReadingMode, setIsReadingMode] = useState(false);
+  const [isFullscreenReading, setIsFullscreenReading] = useState(false);
+  const [theme, setTheme] = useState('default');
 
   const isMobile = useIsMobile();
 
@@ -203,6 +205,8 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
   const handleBackToList = () => {
     setMobileView('list');
     setSelectedEmail(null);
+    // Disable fullscreen reading mode when going back to list
+    setIsFullscreenReading(false);
   };
 
   const toggleMobileSidebar = () => {
@@ -215,6 +219,8 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
     // On mobile, switch to viewer view after selecting an email
     if (isMobile) {
       setMobileView('viewer');
+      // Enable fullscreen reading mode for better reading experience
+      setIsFullscreenReading(true);
     }
     
     // Mark email as read if it's unread
@@ -250,7 +256,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
   );
 
   return (
-    <div className="h-screen flex overflow-hidden bg-gradient-background relative">
+    <div className={`h-screen flex overflow-hidden bg-gradient-background relative ${isReadingMode ? 'reading-mode' : ''}`}>
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(15)].map((_, i) => (
@@ -346,8 +352,8 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
 
       {/* Main Content */}
       <div className="flex-1 flex flex-col relative z-10">
-        {/* Top Toolbar */}
-        <div className="h-16 glass-surface border-b border-primary/20 flex items-center px-4 md:px-6 space-x-2 md:space-x-4">
+        {/* Top Toolbar - Hidden in fullscreen reading mode on mobile */}
+        <div className={`h-16 glass-surface border-b border-primary/20 flex items-center px-4 md:px-6 space-x-2 md:space-x-4 ${isMobile && isFullscreenReading ? 'hidden' : ''}`}>
           {/* Mobile Menu Button */}
           {isMobile && (
             <Button variant="ghost" size="icon" onClick={toggleMobileSidebar} className="md:hidden">
@@ -371,7 +377,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
             </h1>
           </div>
 
-          <div className="flex-1 max-w-md relative">
+          <div className={`flex-1 max-w-md relative ${isReadingMode ? 'hidden md:block' : ''}`}>
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search emails..."
@@ -381,7 +387,23 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
             />
           </div>
 
-          <div className="flex items-center space-x-1 md:space-x-2">
+          {/* Reading Mode Controls */}
+          {isReadingMode && (
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-muted-foreground hidden sm:inline">Reading Mode</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={exitReadingMode}
+                className="glass-hover"
+              >
+                <X className="w-4 h-4" />
+                Exit
+              </Button>
+            </div>
+          )}
+
+          <div className={`flex items-center space-x-1 md:space-x-2 ${isReadingMode ? 'hidden md:flex' : ''}`}>
             <Button 
               variant="ghost" 
               size="icon" 
@@ -405,7 +427,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 flex overflow-hidden">
+        <div className={`flex-1 flex overflow-hidden ${isReadingMode && isMobile ? 'hidden' : ''}`}>
           {/* Email List - Hidden on mobile when viewer is active */}
           <div className={`${isMobile ? (mobileView === 'list' ? 'flex' : 'hidden') : 'flex'} w-full md:w-96 glass-surface md:border-r border-primary/20`}>
             <EmailList3D
@@ -417,9 +439,10 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
           </div>
 
           {/* Email Viewer - Hidden on mobile when list is active */}
-          <div className={`${isMobile ? (mobileView === 'viewer' ? 'flex' : 'hidden') : 'flex'} flex-1`}>
+          <div className={`${isMobile ? (mobileView === 'viewer' ? 'flex' : 'hidden') : 'flex'} flex-1 ${isReadingMode ? 'w-full' : ''}`}>
             <EmailViewer3D
               email={selectedEmail}
+              isFullscreen={isMobile && isFullscreenReading}
               onReply={() => toast.info('Reply functionality would open here')}
               onForward={() => toast.info('Forward functionality would open here')}
               onStar={async () => {
