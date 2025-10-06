@@ -443,6 +443,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
             <EmailViewer3D
               email={selectedEmail}
               isFullscreen={isMobile && isFullscreenReading}
+              onToggleFullscreen={() => setIsFullscreenReading(!isFullscreenReading)}
               onReply={() => toast.info('Reply functionality would open here')}
               onForward={() => toast.info('Forward functionality would open here')}
               onStar={async () => {

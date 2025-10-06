@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { 
   Reply, Forward, Star, Archive, Trash2, MoreHorizontal,
   Clock, User, Mail, Tag, AlertTriangle, Zap, Circle,
-  Download, Flag, Shield
+  Download, Flag, Shield, Maximize2
 } from 'lucide-react';
 
 interface Email {
@@ -168,6 +168,14 @@ const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
           </div>
 
           <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onToggleFullscreen}
+              className="glass-hover text-muted-foreground hover:text-primary"
+            >
+              <Maximize2 className="w-4 h-4" />
+            </Button>
             <Button
               variant="ghost"
               size="icon"
