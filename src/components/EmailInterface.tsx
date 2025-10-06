@@ -256,7 +256,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
   );
 
   return (
-    <div className={`h-screen flex overflow-hidden bg-gradient-background relative ${isReadingMode ? 'reading-mode' : ''}`}>
+    <div className={`email-layout bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 ${isReadingMode ? 'reading-mode' : ''}`}>
       {/* Animated Background Particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[...Array(15)].map((_, i) => (
@@ -277,8 +277,58 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
         ))}
       </div>
 
-      {/* Left Sidebar */}
-      <div className="w-80 glass-surface border-r border-primary/20 flex flex-col relative z-10">
+      {/* Mobile Sidebar Overlay */}
+      {showMobileSidebar && (
+        <div 
+          className="mobile-sidebar-overlay active"
+          onClick={() => setShowMobileSidebar(false)}
+        />
+      )}
+
+      {/* Mobile Sidebar */}
+      <div className={`mobile-sidebar ${showMobileSidebar ? 'active' : ''}`}>
+        <FolderList3D
+          currentFolder={currentFolder}
+          onFolderChange={handleFolderChange}
+          unreadCount={unreadCount}
+        />
+      </div>
+
+      {/* Mobile Header */}
+      <div className="mobile-header z-20 glass-surface">
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowMobileSidebar(true)}
+            className="email-button-mobile glass-hover"
+          >
+            <Menu className="w-5 h-5" />
+          </Button>
+          <h1 className="email-text-lg font-semibold text-primary">QSSN Email</h1>
+          <div className="flex items-center space-x-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsComposeOpen(true)}
+              className="email-button-mobile glass-hover"
+            >
+              <PlusCircle className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onLogout}
+              className="email-button-mobile glass-hover"
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop Sidebar */}
+      <div className="email-sidebar z-10 hidden md:flex">
         {/* Profile Section */}
         <div className="p-6 border-b border-primary/20">
           <div className="flex items-center space-x-4">
@@ -427,9 +477,9 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
         </div>
 
         {/* Content Area */}
-        <div className={`flex-1 flex overflow-hidden ${isReadingMode && isMobile ? 'hidden' : ''}`}>
-          {/* Email List - Hidden on mobile when viewer is active */}
-          <div className={`${isMobile ? (mobileView === 'list' ? 'flex' : 'hidden') : 'flex'} w-full md:w-96 glass-surface md:border-r border-primary/20`}>
+        <div className={`email-content ${isReadingMode && isMobile ? 'hidden' : ''} ${isMobile ? 'mobile-single-column' : ''}`}>
+          {/* Email List */}
+          <div className={`email-list-container ${isMobile && mobileView !== 'list' ? 'hidden' : ''} glass-surface md:border-r border-primary/20`}>
             <EmailList3D
               emails={filteredEmails}
               selectedEmail={selectedEmail}
@@ -438,14 +488,84 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
             />
           </div>
 
-          {/* Email Viewer - Hidden on mobile when list is active */}
-          <div className={`${isMobile ? (mobileView === 'viewer' ? 'flex' : 'hidden') : 'flex'} flex-1 ${isReadingMode ? 'w-full' : ''}`}>
+          {/* Email Viewer */}
+          <div className={`email-viewer-container ${isMobile && mobileView !== 'viewer' ? 'hidden' : ''} ${isReadingMode ? 'active' : ''}`}>
             <EmailViewer3D
               email={selectedEmail}
               isFullscreen={isMobile && isFullscreenReading}
               onToggleFullscreen={() => setIsFullscreenReading(!isFullscreenReading)}
-              onReply={() => toast.info('Reply functionality would open here')}
-              onForward={() => toast.info('Forward functionality would open here')}
+              onReply={async () => {
+                if (selectedEmail) {
+                  try {
+                    const { qemailApi } = await import('@/services/api')
+                    const replyBody = prompt('Enter your reply message:')
+                    if (replyBody) {
+                      await qemailApi.replyEmail(selectedEmail.id, { body: replyBody })
+                      toast.success('Reply sent successfully!')
+                      // Refresh the current folder to show the new reply
+                      const serverEmails = await qemailApi.listEmails(currentFolder)
+                      if (Array.isArray(serverEmails)) {
+                        const normalized: Email[] = serverEmails.map((e: any) => ({
+                          id: String(e.id),
+                          from: e.sender_name || e.from || 'Unknown',
+                          fromEmail: e.sender_email || 'unknown@gss-tec.qssn',
+                          subject: e.subject || '(no subject)',
+                          content: e.content || '',
+                          date: e.created_at || new Date().toISOString(),
+                          isRead: !!e.is_read,
+                          isStarred: !!e.is_starred,
+                          priority: 'normal',
+                          labels: []
+                        }))
+                        setEmails(normalized)
+                        setUnreadCount(normalized.filter(e => !e.isRead).length)
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Failed to send reply:', error)
+                    toast.error('Failed to send reply')
+                  }
+                }
+              }}
+              onForward={async () => {
+  if (selectedEmail) {
+    try {
+      const { qemailApi } = await import('@/services/api')
+      const recipientEmail = prompt('Enter recipient email:')
+      const forwardBody = prompt('Enter your forward message (optional):')
+      if (recipientEmail) {
+        await qemailApi.forwardEmail(selectedEmail.id, { 
+          recipientEmail: recipientEmail.trim(),
+          body: forwardBody || ''
+        })
+        toast.success('Email forwarded successfully!')
+        // Refresh the current folder to show the forwarded email
+        const serverEmails = await qemailApi.listEmails(currentFolder)
+        if (Array.isArray(serverEmails)) {
+          const normalized: Email[] = serverEmails.map((e: any) => ({
+            id: String(e.id),
+            from: e.sender_name || e.from || 'Unknown',
+            fromEmail: e.sender_email || 'unknown@gss-tec.qssn',
+            subject: e.subject || '(no subject)',
+            content: e.content || '',
+            date: e.created_at || new Date().toISOString(),
+            isRead: !!e.is_read,
+            isStarred: !!e.is_starred,
+            priority: 'normal',
+            labels: []
+          }))
+          setEmails(normalized)
+          setUnreadCount(normalized.filter(e => !e.isRead).length)
+        }
+      }
+    } catch (error) {
+      console.error('Failed to forward email:', error)
+      toast.error('Failed to forward email')
+    }
+  }
+}}
+
+
               onStar={async () => {
                 if (selectedEmail) {
                   try {

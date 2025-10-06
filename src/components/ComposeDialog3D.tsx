@@ -11,21 +11,11 @@ import {
   User, Mail, FileText, Zap, Sparkles
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import QAIAssistant from './QAIAssistant';
 
 interface ComposeDialog3DProps {
   isOpen: boolean;
   onClose: () => void;
   onSend: (emailData: any) => void;
-  chatHistory?: string[];
-}
-
-interface EmailSuggestion {
-  to?: string;
-  subject?: string;
-  content?: string;
-  priority?: 'low' | 'normal' | 'high' | 'urgent';
-  tone?: 'formal' | 'casual' | 'friendly' | 'professional';
 }
 
 interface Attachment {
@@ -38,8 +28,7 @@ interface Attachment {
 const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
   isOpen,
   onClose,
-  onSend,
-  chatHistory = []
+  onSend
 }) => {
   const [to, setTo] = useState('');
   const [cc, setCc] = useState('');
@@ -51,7 +40,6 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
   const [showCc, setShowCc] = useState(false);
   const [showBcc, setShowBcc] = useState(false);
   const [isSending, setIsSending] = useState(false);
-  const [showAI, setShowAI] = useState(true);
 
   const handleSend = async () => {
     if (!to.trim() || !subject.trim()) {
@@ -113,16 +101,11 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
     }
   };
 
-  const handleAISuggestion = (suggestion: EmailSuggestion) => {
-    if (suggestion.to) setTo(suggestion.to);
-    if (suggestion.subject) setSubject(suggestion.subject);
-    if (suggestion.content) setContent(suggestion.content);
-    if (suggestion.priority) setPriority(suggestion.priority);
-  };
+
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[95vh] glass-surface border-primary/20 animate-slide-in-3d overflow-hidden">
+      <DialogContent className="compose-dialog-content glass-surface border-primary/20 animate-slide-in-3d overflow-hidden">
         <DialogHeader className="border-b border-primary/20 pb-4">
           <DialogTitle className="flex items-center space-x-3">
             <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center animate-pulse-glow">
@@ -135,31 +118,20 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex gap-6 flex-1 overflow-hidden">
-          {/* AI Assistant Panel */}
-          {showAI && (
-            <div className="w-80 flex-shrink-0 overflow-y-auto">
-              <QAIAssistant 
-                onSuggestion={handleAISuggestion}
-                chatHistory={chatHistory}
-                context="email composition"
-              />
-            </div>
-          )}
-
+        <div className="compose-layout">
           {/* Main Compose Area */}
-          <div className="flex-1 overflow-y-auto space-y-6 p-1">
+          <div className="compose-main-area">
           {/* Recipients */}
           <div className="space-y-4">
-            <div className="flex items-center space-x-4">
-              <Label className="w-12 text-right font-medium">To:</Label>
-              <div className="flex-1 relative">
+            <div className="compose-recipients-row">
+              <Label className="compose-label">To:</Label>
+              <div className="compose-input-wrapper">
                 <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                 <Input
                   placeholder="Enter recipient email addresses (comma separated)"
                   value={to}
                   onChange={(e) => setTo(e.target.value)}
-                  className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow"
+                  className="compose-input"
                 />
               </div>
               <div className="flex space-x-2">
@@ -183,8 +155,8 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
             </div>
 
             {showCc && (
-              <div className="flex items-center space-x-4 animate-slide-in-3d">
-                <Label className="w-12 text-right font-medium">Cc:</Label>
+              <div className="compose-recipients-row animate-slide-in-3d">
+                <Label className="compose-label">Cc:</Label>
                 <Input
                   placeholder="Carbon copy recipients"
                   value={cc}
@@ -195,8 +167,8 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
             )}
 
             {showBcc && (
-              <div className="flex items-center space-x-4 animate-slide-in-3d">
-                <Label className="w-12 text-right font-medium">Bcc:</Label>
+              <div className="compose-recipients-row animate-slide-in-3d">
+                <Label className="compose-label">Bcc:</Label>
                 <Input
                   placeholder="Blind carbon copy recipients"
                   value={bcc}
@@ -208,9 +180,9 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
           </div>
 
           {/* Subject & Priority */}
-          <div className="flex items-center space-x-4">
-            <Label className="w-12 text-right font-medium">Subject:</Label>
-            <div className="flex-1 relative">
+          <div className="compose-subject-row">
+            <Label className="compose-label">Subject:</Label>
+            <div className="compose-input-wrapper">
               <FileText className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Email subject"
@@ -239,8 +211,8 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
           </div>
 
           {/* Formatting Toolbar */}
-          <div className="flex items-center justify-between p-3 glass-surface rounded-lg border border-primary/10">
-            <div className="flex items-center space-x-2">
+          <div className="compose-toolbar">
+            <div className="compose-toolbar-group">
               <Button variant="ghost" size="icon" className="glass-hover w-8 h-8">
                 <Bold className="w-4 h-4" />
               </Button>
@@ -283,7 +255,7 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
               placeholder="Write your message here..."
               value={content}
               onChange={(e) => setContent(e.target.value)}
-              className="min-h-[200px] glass-surface border-primary/20 focus:border-primary focus:shadow-glow resize-none"
+              className="compose-textarea glass-surface border-primary/20 focus:border-primary focus:shadow-glow"
             />
           </div>
 
@@ -326,21 +298,13 @@ const ComposeDialog3D: React.FC<ComposeDialog3DProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex items-center justify-between pt-4 border-t border-primary/20">
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+        <div className="compose-actions">
+          <div className="compose-actions-left">
             <Clock className="w-4 h-4" />
             <span>Auto-save enabled</span>
           </div>
           
-          <div className="flex items-center space-x-3">
-            <Button
-              variant="outline"
-              onClick={() => setShowAI(!showAI)}
-              className={`glass-hover ${showAI ? 'border-accent/30 text-accent' : 'border-muted/20'}`}
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Q-AI {showAI ? 'On' : 'Off'}
-            </Button>
+          <div className="compose-actions-right">
             <Button
               variant="outline"
               onClick={onClose}

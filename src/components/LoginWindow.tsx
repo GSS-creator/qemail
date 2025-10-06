@@ -8,6 +8,7 @@ import { Eye, EyeOff, Mail, Lock, User, Sparkles } from 'lucide-react';
 import ParticleSystem from './3D/ParticleSystem';
 import HolographicCard from './3D/HolographicCard';
 import NeuralNetwork3D from './3D/NeuralNetwork3D';
+import CautionDialog3D from './CautionDialog3D';
 import qssnLogo from '@/assets/qssn-logo.jpg';
 import holographicBg from '@/assets/holographic-bg.jpg';
 
@@ -34,6 +35,10 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
   const [showOtpDialog, setShowOtpDialog] = useState(false);
   const [otpFromServer, setOtpFromServer] = useState('');
   const [otpExpiresAt, setOtpExpiresAt] = useState('');
+  const [showCautionDialog, setShowCautionDialog] = useState(false);
+  const [registeredQssnEmail, setRegisteredQssnEmail] = useState('');
+  const [registeredUsername, setRegisteredUsername] = useState('');
+  const [registeredToken, setRegisteredToken] = useState('');
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -144,8 +149,12 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
         onLogin(username, resp.token)
       } else {
         const resp = await qemailApi.register({ username, password })
-        toast.success('Registration successful!')
-        onLogin(username, resp.token)
+        // Generate QSSN email for display
+        const qssnEmail = `${username}@gss-tec.qssn`
+        setRegisteredQssnEmail(qssnEmail)
+        setRegisteredUsername(username)
+        setRegisteredToken(resp.token) // Store the token for later use
+        setShowCautionDialog(true)
       }
     } catch (error: any) {
       let errorMessage = 'Authentication failed. Please try again.';
@@ -570,6 +579,21 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: hsl(var(--primary-glow));
         }
+        
+        @keyframes slide-in-3d {
+          0% {
+            transform: perspective(1000px) rotateX(-15deg) translateY(-50px) scale(0.9);
+            opacity: 0;
+          }
+          100% {
+            transform: perspective(1000px) rotateX(0deg) translateY(0) scale(1);
+            opacity: 1;
+          }
+        }
+        
+        .animate-slide-in-3d {
+          animation: slide-in-3d 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
       `}</style>
 
       {/* OTP Dialog */}
@@ -617,8 +641,20 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
           </div>
         </div>
       )}
+
+      {/* Caution Dialog - Shows after successful registration */}
+      <CautionDialog3D
+        isOpen={showCautionDialog}
+        onClose={() => {
+          setShowCautionDialog(false);
+          // Proceed with login after user acknowledges the caution
+          onLogin(registeredUsername, registeredToken);
+        }}
+        qssnEmail={registeredQssnEmail}
+        username={registeredUsername}
+      />
     </div>
   );
-};
+}
 
 export default LoginWindow;

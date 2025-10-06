@@ -69,13 +69,33 @@ class QEmailApiService {
   }
 
   async sendEmail(data: { to: string; subject: string; content: string }): Promise<any> {
-    const res = await fetch(`${this.baseUrl}/api/emails/send`, {
-      method: 'POST',
-      headers: this.getHeaders(true),
-      body: JSON.stringify(data)
-    })
-    if (!res.ok) throw new Error('Failed to send email')
-    return res.json()
+    console.log('QEmail API: Sending email to:', data.to)
+    try {
+      const res = await fetch(`${this.baseUrl}/api/emails/send`, {
+        method: 'POST',
+        headers: this.getHeaders(true),
+        body: JSON.stringify({
+          recipient_email: data.to,
+          subject: data.subject,
+          body: data.content
+        })
+      })
+      
+      console.log('QEmail API: Send email response status:', res.status, res.statusText)
+      
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({ error: 'Failed to send email' }))
+        console.error('QEmail API: Send email error:', errorData)
+        throw new Error(errorData.error || 'Failed to send email')
+      }
+      
+      const responseData = await res.json()
+      console.log('QEmail API: Email sent successfully:', responseData)
+      return responseData
+    } catch (error) {
+      console.error('QEmail API: Send email exception:', error)
+      throw error
+    }
   }
 
   async markEmailAsRead(id: number): Promise<any> {
@@ -98,6 +118,32 @@ class QEmailApiService {
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ error: 'Failed to toggle email star' }))
       throw new Error(errorData.error || 'Failed to toggle email star')
+    }
+    return res.json()
+  }
+  
+  async forwardEmail(id: string, data: { recipientEmail: string; body: string }): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/api/emails/${id}/forward`, {
+      method: 'POST',
+      headers: this.getHeaders(true),
+      body: JSON.stringify(data)
+    })
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Failed to forward email' }))
+      throw new Error(errorData.error || 'Failed to forward email')
+    }
+    return res.json()
+  }
+
+  async replyEmail(id: string, data: { body: string }): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/api/emails/${id}/reply`, {
+      method: 'POST',
+      headers: this.getHeaders(true),
+      body: JSON.stringify(data)
+    })
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Failed to reply to email' }))
+      throw new Error(errorData.error || 'Failed to reply to email')
     }
     return res.json()
   }
