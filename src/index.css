@@ -952,33 +952,7 @@
   @media (max-width: 480px) {
     .email-content-scrollable {
       max-height: 40vh;
-      padding: 1rem; /* Reduce padding on mobile */
     }
-  }
-
-  /* Smooth scrolling for better UX */
-  .email-content-scrollable {
-    scroll-behavior: smooth;
-    -webkit-overflow-scrolling: touch; /* iOS smooth scrolling */
-  }
-
-  /* Prevent horizontal overflow in email content */
-  .email-content-scrollable * {
-    max-width: 100% !important;
-    box-sizing: border-box !important;
-  }
-
-  /* Ensure images are responsive within scrollable content */
-  .email-content-scrollable img {
-    max-width: 100% !important;
-    height: auto !important;
-  }
-
-  /* Handle long words and URLs */
-  .email-content-scrollable {
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    hyphens: auto;
   }
   
   /* Compose Dialog Responsive Styles */

@@ -282,7 +282,7 @@ const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
           <CardContent>
             {/* Email Body */}
             <div 
-              className="prose prose-invert max-w-none glass-surface p-6 rounded-lg border border-primary/10 email-content-scrollable"
+              className="prose prose-invert max-w-none glass-surface p-6 rounded-lg border border-primary/10"
               dangerouslySetInnerHTML={{ __html: email.content }}
             />
 

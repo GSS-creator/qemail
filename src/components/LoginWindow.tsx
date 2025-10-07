@@ -148,9 +148,7 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
         toast.success('Login successful!')
         onLogin(username, resp.token)
       } else {
-        console.log('Attempting registration with username:', username);
         const resp = await qemailApi.register({ username, password })
-        console.log('Registration successful:', resp);
         // Generate QSSN email for display
         const qssnEmail = `${username}@gss-tec.qssn`
         setRegisteredQssnEmail(qssnEmail)
