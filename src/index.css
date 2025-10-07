@@ -179,66 +179,84 @@
     max-height: 90vh;
     width: 95vw;
     height: auto;
-    overflow: auto;
+    overflow: hidden;
     /* Fix positioning to prevent dialog from going off-screen */
     top: 50% !important;
     transform: translate(-50%, -50%) !important;
+    display: flex;
+    flex-direction: column;
   }
 
-  .email-view-body {
-  overflow: auto !important;
-  scrollbar-width: thin;
-  scrollbar-color: var(--primary) var(--surface);
-  max-height: 60vh;
-  min-height: 200px;
-}
-
-.email-view-body::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-.email-view-body::-webkit-scrollbar-track {
-  background: var(--surface);
-  border-radius: 4px;
-}
-
-.email-view-body::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  border-radius: 4px;
-}
-
-.email-view-body::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
-}
-
-.email-view-body::-webkit-scrollbar-corner {
-  background: var(--surface);
-}
-
-.email-body-content {
-    overflow-x: auto !important;
+  .email-view-dialog-content {
     overflow-y: auto !important;
-    max-width: 100% !important;
-    word-wrap: break-word !important;
-    word-break: break-word !important;
+    overflow-x: auto !important;
+    max-height: 85vh !important;
+    height: 85vh !important;
+    display: flex !important;
+    flex-direction: column !important;
     scrollbar-width: thin;
     scrollbar-color: var(--primary) var(--surface);
   }
 
-  .email-body-content::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
+  .email-view-dialog-content::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
   }
 
-  .email-body-content::-webkit-scrollbar-track {
+  .email-view-dialog-content::-webkit-scrollbar-track {
     background: var(--surface);
-    border-radius: 3px;
+    border-radius: 6px;
   }
 
-  .email-body-content::-webkit-scrollbar-thumb {
+  .email-view-dialog-content::-webkit-scrollbar-thumb {
     background: linear-gradient(135deg, var(--primary), var(--secondary));
-    border-radius: 3px;
+    border-radius: 6px;
+  }
+
+  .email-view-dialog-content::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+  }
+
+  .email-view-dialog-content::-webkit-scrollbar-corner {
+    background: var(--surface);
+  }
+
+  /* Scrollable Email Content Container */
+  .email-content-scroll-container {
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary) var(--surface);
+    min-height: 200px;
+  }
+
+  .email-content-scroll-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  .email-content-scroll-container::-webkit-scrollbar-track {
+    background: var(--surface);
+    border-radius: 5px;
+  }
+
+  .email-content-scroll-container::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    border-radius: 5px;
+  }
+
+  .email-content-scroll-container::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, var(--primary-glow), var(--secondary-glow));
+  }
+
+  .email-view-body {
+    flex: 1;
+    min-height: 200px;
+    max-height: calc(90vh - 300px);
+  }
+
+  .email-body-content {
+    max-width: 100% !important;
+    word-wrap: break-word !important;
+    word-break: break-word !important;
   }
 
   .email-body-content table {
@@ -267,6 +285,18 @@
       max-height: 85vh;
     }
   }
+
+  @media (max-width: 767px) {
+    .email-view-body {
+      max-height: calc(80vh - 250px);
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .email-body-content {
+      max-height: 300px;
+      font-size: 14px;
+    }
+  }
   
   /* Mobile-specific email view dialog styles */
   @media (max-width: 768px) {
@@ -284,6 +314,7 @@
       transform: none !important;
       position: fixed !important;
       padding: 0;
+      -webkit-overflow-scrolling: touch;
     }
     
     .email-view-dialog-content .email-view-header {
@@ -318,6 +349,12 @@
       padding: 0;
       max-height: 100vh;
       overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    
+    .email-content-scroll-container {
+      max-height: 250px !important;
+      min-height: 150px;
       -webkit-overflow-scrolling: touch;
     }
     
