@@ -69,6 +69,7 @@ const themeStyles = `
 import FolderList3D from './FolderList3D';
 import EmailList3D from './EmailList3D';
 import EmailViewer3D from './EmailViewer3D';
+import EmailViewDialog3D from './EmailViewDialog3D';
 import ComposeDialog3D from './ComposeDialog3D';
 import Settings3D from './Settings3D';
 import AdvancedSearch3D from './AdvancedSearch3D';
@@ -109,6 +110,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
   const [isReadingMode, setIsReadingMode] = useState(false);
   const [isFullscreenReading, setIsFullscreenReading] = useState(false);
   const [theme, setTheme] = useState('default');
+  const [isEmailDialogOpen, setIsEmailDialogOpen] = useState(false);
 
   const isMobile = useIsMobile();
 
@@ -199,14 +201,26 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
     if (isMobile) {
       setShowMobileSidebar(false);
       setMobileView('list');
+      // Remove body class to restore normal scrolling
+      document.body.classList.remove('mobile-email-open');
     }
   };
 
   const handleBackToList = () => {
     setMobileView('list');
     setSelectedEmail(null);
-    // Disable fullscreen reading mode when going back to list
+    // Disable reading mode and fullscreen reading mode when going back to list
+    setIsReadingMode(false);
     setIsFullscreenReading(false);
+    // Remove body class to restore normal scrolling
+    document.body.classList.remove('mobile-email-open');
+  };
+
+  const exitReadingMode = () => {
+    setIsReadingMode(false);
+    setIsFullscreenReading(false);
+    // Remove body class to restore normal scrolling
+    document.body.classList.remove('mobile-email-open');
   };
 
   const toggleMobileSidebar = () => {
@@ -216,12 +230,12 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
   const handleEmailSelect = async (email: Email) => {
     setSelectedEmail(email);
     
-    // On mobile, switch to viewer view after selecting an email
+    // On mobile, open dialog instead of switching to viewer view
     if (isMobile) {
-      console.log('Mobile email selected, switching to viewer view');
-      setMobileView('viewer');
-      // Enable fullscreen reading mode for better reading experience
-      setIsFullscreenReading(true);
+      console.log('Mobile email selected, opening dialog');
+      setIsEmailDialogOpen(true);
+      // Add body class to prevent background scrolling
+      document.body.classList.add('mobile-email-open');
     }
     
     // Mark email as read if it's unread
@@ -476,7 +490,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
         </div>
 
         {/* Content Area */}
-        <div className={`email-content ${isReadingMode && isMobile ? 'hidden' : ''} ${isMobile ? 'mobile-single-column' : ''}`}>
+        <div className={`email-content ${isMobile ? 'mobile-single-column' : ''}`}>
           {/* Debug info */}
           {isMobile && (
             <div className="md:hidden p-2 text-xs text-muted-foreground bg-surface/50">
@@ -494,7 +508,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
           </div>
 
           {/* Email Viewer */}
-          <div className={`email-viewer-container ${isMobile && mobileView !== 'viewer' ? 'hidden' : ''} ${(isReadingMode || (isMobile && mobileView === 'viewer' && selectedEmail)) ? 'active' : ''}`}>
+          <div className={`email-viewer-container ${isMobile && mobileView !== 'viewer' ? 'hidden' : ''} ${(isReadingMode || (isMobile && mobileView === 'viewer' && selectedEmail)) ? 'active' : ''} ${isMobile && isEmailDialogOpen ? 'hidden' : ''}`}>
             <EmailViewer3D
               email={selectedEmail}
               isFullscreen={isMobile && isFullscreenReading}
@@ -716,6 +730,162 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
         onClose={() => setShowTerms(false)}
         onAccept={() => {
           toast.success('Terms and conditions accepted!');
+        }}
+      />
+
+      {/* Email View Dialog for Mobile */}
+      <EmailViewDialog3D
+        isOpen={isEmailDialogOpen}
+        onClose={() => {
+          setIsEmailDialogOpen(false);
+          // Remove body class to restore normal scrolling
+          document.body.classList.remove('mobile-email-open');
+        }}
+        email={selectedEmail}
+        onReply={async () => {
+          if (selectedEmail) {
+            try {
+              const { qemailApi } = await import('@/services/api')
+              const replyBody = prompt('Enter your reply message:')
+              if (replyBody) {
+                await qemailApi.replyEmail(selectedEmail.id, { body: replyBody })
+                toast.success('Reply sent successfully!')
+                // Refresh the current folder to show the new reply
+                const serverEmails = await qemailApi.listEmails(currentFolder)
+                if (Array.isArray(serverEmails)) {
+                  const normalized: Email[] = serverEmails.map((e: any) => ({
+                    id: String(e.id),
+                    from: e.sender_name || e.from || 'Unknown',
+                    fromEmail: e.sender_email || 'unknown@gss-tec.qssn',
+                    subject: e.subject || '(no subject)',
+                    content: e.content || '',
+                    date: e.created_at || new Date().toISOString(),
+                    isRead: !!e.is_read,
+                    isStarred: !!e.is_starred,
+                    priority: 'normal',
+                    labels: []
+                  }))
+                  setEmails(normalized)
+                  setUnreadCount(normalized.filter(e => !e.isRead).length)
+                }
+              }
+            } catch (error) {
+              console.error('Failed to send reply:', error)
+              toast.error('Failed to send reply')
+            }
+          }
+        }}
+        onForward={async () => {
+          if (selectedEmail) {
+            try {
+              const { qemailApi } = await import('@/services/api')
+              const recipientEmail = prompt('Enter recipient email:')
+              const forwardBody = prompt('Enter your forward message (optional):')
+              if (recipientEmail) {
+                await qemailApi.forwardEmail(selectedEmail.id, { 
+                  recipientEmail: recipientEmail.trim(),
+                  body: forwardBody || ''
+                })
+                toast.success('Email forwarded successfully!')
+                // Refresh the current folder to show the forwarded email
+                const serverEmails = await qemailApi.listEmails(currentFolder)
+                if (Array.isArray(serverEmails)) {
+                  const normalized: Email[] = serverEmails.map((e: any) => ({
+                    id: String(e.id),
+                    from: e.sender_name || e.from || 'Unknown',
+                    fromEmail: e.sender_email || 'unknown@gss-tec.qssn',
+                    subject: e.subject || '(no subject)',
+                    content: e.content || '',
+                    date: e.created_at || new Date().toISOString(),
+                    isRead: !!e.is_read,
+                    isStarred: !!e.is_starred,
+                    priority: 'normal',
+                    labels: []
+                  }))
+                  setEmails(normalized)
+                  setUnreadCount(normalized.filter(e => !e.isRead).length)
+                }
+              }
+            } catch (error) {
+              console.error('Failed to forward email:', error)
+              toast.error('Failed to forward email')
+            }
+          }
+        }}
+        onStar={async () => {
+          if (selectedEmail) {
+            try {
+              const { qemailApi } = await import('@/services/api')
+              await qemailApi.toggleEmailStar(selectedEmail.id)
+              toast.success(selectedEmail.isStarred ? 'Email unstarred!' : 'Email starred!')
+              // Refresh the email list to reflect the change
+              const serverEmails = await qemailApi.listEmails(currentFolder)
+              if (Array.isArray(serverEmails)) {
+                const normalized: Email[] = serverEmails.map((e: any) => ({
+                  id: String(e.id),
+                  from: e.sender_name || e.from || 'Unknown',
+                  fromEmail: e.sender_email || 'unknown@gss-tec.qssn',
+                  subject: e.subject || '(no subject)',
+                  content: e.content || '',
+                  date: e.created_at || new Date().toISOString(),
+                  isRead: !!e.is_read,
+                  isStarred: !!e.is_starred,
+                  priority: 'normal',
+                  labels: []
+                }))
+                setEmails(normalized)
+                setUnreadCount(normalized.filter(e => !e.isRead).length)
+                // Update selected email if it still exists
+                const updatedEmail = normalized.find(e => e.id === selectedEmail.id)
+                if (updatedEmail) {
+                  setSelectedEmail(updatedEmail)
+                }
+              }
+            } catch (error) {
+              console.error('Failed to toggle star:', error)
+              toast.error('Failed to toggle star')
+            }
+          }
+        }}
+        onArchive={async () => {
+          if (selectedEmail) {
+            try {
+              const { qemailApi } = await import('@/services/api')
+              await qemailApi.toggleEmailArchive(selectedEmail.id)
+              toast.success('Email archived!')
+              // Remove from current list and select next email
+              const updatedEmails = emails.filter(e => e.id !== selectedEmail.id)
+              setEmails(updatedEmails)
+              setUnreadCount(updatedEmails.filter(e => !e.isRead).length)
+              setSelectedEmail(updatedEmails.length > 0 ? updatedEmails[0] : null)
+              // Close the dialog
+              setIsEmailDialogOpen(false)
+              document.body.classList.remove('mobile-email-open');
+            } catch (error) {
+              console.error('Failed to archive email:', error)
+              toast.error('Failed to archive email')
+            }
+          }
+        }}
+        onDelete={async () => {
+          if (selectedEmail) {
+            try {
+              const { qemailApi } = await import('@/services/api')
+              await qemailApi.deleteEmail(selectedEmail.id)
+              toast.success('Email deleted!')
+              // Remove from current list and select next email
+              const updatedEmails = emails.filter(e => e.id !== selectedEmail.id)
+              setEmails(updatedEmails)
+              setUnreadCount(updatedEmails.filter(e => !e.isRead).length)
+              setSelectedEmail(updatedEmails.length > 0 ? updatedEmails[0] : null)
+              // Close the dialog
+              setIsEmailDialogOpen(false)
+              document.body.classList.remove('mobile-email-open');
+            } catch (error) {
+              console.error('Failed to delete email:', error)
+              toast.error('Failed to delete email')
+            }
+          }
         }}
       />
     </div>

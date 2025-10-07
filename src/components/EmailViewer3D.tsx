@@ -209,7 +209,7 @@ const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
 
       {/* Email Content */}
       <div 
-        className={`email-content-scrollable flex-1 overflow-y-auto relative z-10 ${isFullscreen ? 'p-2' : 'p-6'}`}
+        className={`email-content-scrollable flex-1 overflow-y-auto relative z-10 ${isFullscreen ? 'p-0' : 'p-0 md:p-4'} mobile-email-content`}
         onClick={isFullscreen ? () => {
           setShowTapIndicator(true);
           setTimeout(() => setShowTapIndicator(false), 600);
@@ -221,8 +221,8 @@ const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
         {isFullscreen && showTapIndicator && (
           <div className="fullscreen-tap-indicator show" />
         )}
-        <Card className="glass-surface border-primary/20 animate-slide-in-3d">
-          <CardHeader className="space-y-4">
+        <Card className="glass-surface border-primary/20 animate-slide-in-3d mobile-email-card w-full">
+          <CardHeader className="space-y-4 p-4 md:p-6">
             {/* Subject */}
             <div>
               <h1 className="text-2xl font-bold text-foreground mb-2">
@@ -279,10 +279,10 @@ const EmailViewer3D: React.FC<EmailViewer3DProps> = ({
             </div>
           </CardHeader>
 
-          <CardContent>
+          <CardContent className="mobile-email-card-content">
             {/* Email Body */}
             <div 
-              className="email-content-scrollable prose prose-invert max-w-none glass-surface p-6 rounded-lg border border-primary/10"
+              className="email-body-content prose prose-invert max-w-none glass-surface p-4 md:p-6 rounded-lg border border-primary/10 mobile-email-body"
               dangerouslySetInnerHTML={{ __html: email.content }}
             />
 
