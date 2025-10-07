@@ -191,6 +191,15 @@ class QEmailApiService {
     // Generate QSSN email automatically like the Python backend does
     const qssnEmail = `${payload.username}@gss-tec.qssn`;
     
+    // Debug logging
+    console.log('Registration request:', {
+      username: payload.username,
+      email: qssnEmail,
+      password: payload.password,
+      first_name: payload.username,
+      interests: payload.interests
+    });
+    
     const res = await fetch(`${this.baseUrl}/api/auth/register`, {
       method: 'POST',
       headers: this.getHeaders(true),
@@ -202,11 +211,22 @@ class QEmailApiService {
         interests: payload.interests
       })
     })
+    
+    console.log('Registration response status:', res.status);
+    
     if (!res.ok) {
-      const errorData = await res.json().catch(() => ({ error: 'Registration failed' }))
+      const errorText = await res.text();
+      console.log('Registration error response:', errorText);
+      let errorData;
+      try {
+        errorData = JSON.parse(errorText);
+      } catch {
+        errorData = { error: 'Registration failed' };
+      }
       throw new Error(errorData.error || 'Registration failed')
     }
     const data = await res.json()
+    console.log('Registration successful:', data);
     if (data?.token) this.setToken(data.token)
     return data
   }

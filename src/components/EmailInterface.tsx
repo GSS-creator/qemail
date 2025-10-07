@@ -218,27 +218,26 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
     
     // On mobile, switch to viewer view after selecting an email
     if (isMobile) {
+      console.log('Mobile email selected, switching to viewer view');
       setMobileView('viewer');
       // Enable fullscreen reading mode for better reading experience
       setIsFullscreenReading(true);
     }
     
     // Mark email as read if it's unread
-    if (!email.isRead) {
-      try {
-        const { qemailApi } = await import('@/services/api')
-        await qemailApi.markEmailAsRead(email.id)
-        
-        // Update the email in the list to mark as read
-        setEmails(prevEmails => 
-          prevEmails.map(e => 
-            e.id === email.id ? { ...e, isRead: true } : e
-          )
+    try {
+      const { qemailApi } = await import('@/services/api')
+      await qemailApi.markEmailAsRead(email.id)
+      
+      // Update the email in the list to mark as read
+      setEmails(prevEmails => 
+        prevEmails.map(e => 
+          e.id === email.id ? { ...e, isRead: true } : e
         )
-        setUnreadCount(prev => Math.max(0, prev - 1))
-      } catch (error) {
-        console.error('Failed to mark email as read:', error)
-      }
+      )
+      setUnreadCount(prev => Math.max(0, prev - 1))
+    } catch (error) {
+      console.error('Failed to mark email as read:', error)
     }
   };
 
@@ -478,6 +477,12 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
 
         {/* Content Area */}
         <div className={`email-content ${isReadingMode && isMobile ? 'hidden' : ''} ${isMobile ? 'mobile-single-column' : ''}`}>
+          {/* Debug info */}
+          {isMobile && (
+            <div className="md:hidden p-2 text-xs text-muted-foreground bg-surface/50">
+              Mobile View: {mobileView}, Selected: {selectedEmail ? 'Yes' : 'No'}, Reading Mode: {isReadingMode ? 'Yes' : 'No'}
+            </div>
+          )}
           {/* Email List */}
           <div className={`email-list-container ${isMobile && mobileView !== 'list' ? 'hidden' : ''} glass-surface md:border-r border-primary/20`}>
             <EmailList3D
@@ -489,7 +494,7 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
           </div>
 
           {/* Email Viewer */}
-          <div className={`email-viewer-container ${isMobile && mobileView !== 'viewer' ? 'hidden' : ''} ${isReadingMode ? 'active' : ''}`}>
+          <div className={`email-viewer-container ${isMobile && mobileView !== 'viewer' ? 'hidden' : ''} ${(isReadingMode || (isMobile && mobileView === 'viewer' && selectedEmail)) ? 'active' : ''}`}>
             <EmailViewer3D
               email={selectedEmail}
               isFullscreen={isMobile && isFullscreenReading}
