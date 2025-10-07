@@ -913,9 +913,29 @@
   /* Email content scrollbar styling */
   .email-content-scrollable {
     overflow-y: auto;
-    max-height: 60vh;
     scrollbar-width: thin;
     scrollbar-color: var(--accent-color) transparent;
+    /* Remove max-height to allow full screen extension */
+    height: 100%;
+  }
+
+  /* Full height email containers */
+  .email-viewer-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .email-content {
+    flex: 1;
+    display: flex;
+    height: 100%;
+  }
+
+  .email-list-container {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
   }
 
   .email-content-scrollable::-webkit-scrollbar {
@@ -945,13 +965,15 @@
   /* Mobile responsive adjustments */
   @media (max-width: 768px) {
     .email-content-scrollable {
-      max-height: 50vh;
+      /* Remove max-height constraint on mobile too */
+      height: 100%;
     }
   }
 
   @media (max-width: 480px) {
     .email-content-scrollable {
-      max-height: 40vh;
+      /* Remove max-height constraint on small mobile too */
+      height: 100%;
     }
   }
   
