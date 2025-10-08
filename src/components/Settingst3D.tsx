@@ -208,29 +208,7 @@ const Settings3D: React.FC<Settings3DProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="
-        max-w-6xl 
-        max-h-[90vh] 
-        glass-surface 
-        border-primary/20 
-        animate-slide-in-3d 
-        overflow-hidden 
-        w-[95vw] 
-        h-[95vh]
-        mx-auto
-        my-auto
-        fixed
-        inset-0
-        sm:max-w-6xl
-        sm:max-h-[90vh]
-        sm:rounded-lg
-        sm:inset-auto
-        sm:top-1/2
-        sm:left-1/2
-        sm:transform
-        sm:-translate-x-1/2
-        sm:-translate-y-1/2
-      " style={{background: 'var(--card-bg)', color: 'var(--text-primary)'}}>
+      <DialogContent className="max-w-6xl max-h-[90vh] glass-surface border-primary/20 animate-slide-in-3d overflow-hidden max-sm:max-w-[95vw] max-sm:max-h-[95vh] max-sm:mx-2 max-sm:my-2 p-0" style={{background: 'var(--card-bg)', color: 'var(--text-primary)'}}>
         <NeuralNetworkBackground />
         
         <DialogHeader className="border-b border-primary/20 pb-4 px-6 pt-6 bg-gradient-to-r from-primary/5 to-transparent relative z-10">
@@ -253,28 +231,28 @@ const Settings3D: React.FC<Settings3DProps> = ({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden relative z-10 h-[calc(95vh-140px)] sm:h-[calc(90vh-140px)]">
+        <div className="flex-1 overflow-hidden relative z-10">
           {/* List View */}
           {activeTab === 'list' && (
-            <div className="p-4 sm:p-6 space-y-4 h-full overflow-y-auto">
-              <div className="grid grid-cols-1 gap-3 sm:gap-4">
+            <div className="p-6 space-y-4 max-h-[60vh] overflow-y-auto">
+              <div className="grid grid-cols-1 gap-4">
                 {settingsSections.map((section) => (
                   <Card 
                     key={section.id}
                     className="cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-hover glass-surface border-primary/20"
                     onClick={() => handleSectionSelect(section.id)}
                   >
-                    <CardContent className="p-3 sm:p-4 flex items-center justify-between">
-                      <div className="flex items-center space-x-3 sm:space-x-4">
+                    <CardContent className="p-4 flex items-center justify-between">
+                      <div className="flex items-center space-x-4">
                         <div className="p-2 rounded-lg bg-primary/10">
-                          <section.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                          <section.icon className="w-5 h-5 text-primary" />
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold text-foreground text-sm sm:text-base truncate">{section.name}</h3>
-                          <p className="text-xs sm:text-sm text-muted-foreground truncate">{section.description}</p>
+                        <div>
+                          <h3 className="font-semibold text-foreground">{section.name}</h3>
+                          <p className="text-sm text-muted-foreground">{section.description}</p>
                         </div>
                       </div>
-                      <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-muted-foreground flex-shrink-0" />
+                      <ChevronRight className="w-5 h-5 text-muted-foreground" />
                     </CardContent>
                   </Card>
                 ))}
@@ -284,39 +262,39 @@ const Settings3D: React.FC<Settings3DProps> = ({
 
           {/* Profile Settings */}
           {activeTab === 'profile' && (
-            <div className="p-4 sm:p-6 h-full overflow-y-auto">
-              <HolographicCard className="p-3 sm:p-4 md:p-6">
-                <CardHeader className="px-0 pt-0 pb-4">
-                  <CardTitle className="flex items-center space-x-2 text-base sm:text-lg md:text-xl">
-                    <User className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <HolographicCard className="p-4 md:p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+                    <User className="w-5 h-5 text-primary" />
                     <span>Profile Information</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 px-0 pb-0">
-                  <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-sm sm:text-base">Username</Label>
+                      <Label>Username</Label>
                       <Input
                         value={profile.username}
                         onChange={(e) => setProfile({...profile, username: e.target.value})}
-                        className="glass-surface border-primary/20 text-sm sm:text-base"
+                        className="glass-surface border-primary/20"
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-sm sm:text-base">Display Name</Label>
+                      <Label>Display Name</Label>
                       <Input
                         value={profile.displayName}
                         onChange={(e) => setProfile({...profile, displayName: e.target.value})}
-                        className="glass-surface border-primary/20 text-sm sm:text-base"
+                        className="glass-surface border-primary/20"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label className="text-sm sm:text-base">Timezone</Label>
+                      <Label>Timezone</Label>
                       <Select value={profile.timezone} onValueChange={(value) => setProfile({...profile, timezone: value})}>
-                        <SelectTrigger className="glass-surface border-primary/20 text-sm sm:text-base">
+                        <SelectTrigger className="glass-surface border-primary/20">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -328,9 +306,9 @@ const Settings3D: React.FC<Settings3DProps> = ({
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label className="text-sm sm:text-base">Language</Label>
+                      <Label>Language</Label>
                       <Select value={profile.language} onValueChange={(value) => setProfile({...profile, language: value})}>
-                        <SelectTrigger className="glass-surface border-primary/20 text-sm sm:text-base">
+                        <SelectTrigger className="glass-surface border-primary/20">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
@@ -344,14 +322,14 @@ const Settings3D: React.FC<Settings3DProps> = ({
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="flex items-center space-x-2 text-sm sm:text-base">
-                      <Signature className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <Label className="flex items-center space-x-2">
+                      <Signature className="w-4 h-4" />
                       <span>Email Signature</span>
                     </Label>
                     <Textarea
                       value={profile.signature}
                       onChange={(e) => setProfile({...profile, signature: e.target.value})}
-                      className="glass-surface border-primary/20 text-sm sm:text-base"
+                      className="glass-surface border-primary/20"
                       rows={3}
                     />
                   </div>
@@ -362,16 +340,16 @@ const Settings3D: React.FC<Settings3DProps> = ({
 
           {/* Theme Settings */}
           {activeTab === 'appearance' && (
-            <div className="p-4 sm:p-6 h-full overflow-y-auto">
-              <HolographicCard className="p-3 sm:p-4 md:p-6">
-                <CardHeader className="px-0 pt-0 pb-4">
-                  <CardTitle className="flex items-center space-x-2 text-base sm:text-lg md:text-xl">
-                    <Palette className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <HolographicCard className="p-4 md:p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+                    <Palette className="w-5 h-5 text-primary" />
                     <span>Holographic Themes</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="px-0 pb-0">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     {themes.map((theme) => (
                       <Card
                         key={theme.id}
@@ -382,11 +360,11 @@ const Settings3D: React.FC<Settings3DProps> = ({
                         }`}
                         onClick={() => onThemeChange(theme.id)}
                       >
-                        <CardContent className="p-3 sm:p-4 text-center">
-                          <div className={`w-full h-12 sm:h-16 rounded-lg mb-2 sm:mb-3 ${theme.preview} animate-pulse-glow`} />
-                          <h3 className="font-medium text-sm sm:text-base">{theme.name}</h3>
+                        <CardContent className="p-4 text-center">
+                          <div className={`w-full h-16 rounded-lg mb-3 ${theme.preview} animate-pulse-glow`} />
+                          <h3 className="font-medium">{theme.name}</h3>
                           {currentTheme === theme.id && (
-                            <Badge className="mt-1 sm:mt-2 bg-primary text-xs">Active</Badge>
+                            <Badge className="mt-2 bg-primary">Active</Badge>
                           )}
                         </CardContent>
                       </Card>
@@ -399,63 +377,63 @@ const Settings3D: React.FC<Settings3DProps> = ({
 
           {/* Qemail Settings */}
           {activeTab === 'email' && (
-            <div className="p-4 sm:p-6 h-full overflow-y-auto">
-              <HolographicCard className="p-3 sm:p-4 md:p-6">
-                <CardHeader className="px-0 pt-0 pb-4">
-                  <CardTitle className="flex items-center space-x-2 text-base sm:text-lg md:text-xl">
-                    <Bell className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <HolographicCard className="p-4 md:p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+                    <Bell className="w-5 h-5 text-primary" />
                     <span>Qemail Preferences</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 px-0 pb-0">
-                  <div className="grid grid-cols-1 gap-4 sm:gap-6">
-                    <div className="space-y-3 sm:space-y-4">
+                  <div className="grid grid-cols-1 gap-6">
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm sm:text-base">Auto-Reply</Label>
+                        <Label>Auto-Reply</Label>
                         <Switch
                           checked={emailSettings.autoReply}
                           onCheckedChange={(checked) => setEmailSettings({...emailSettings, autoReply: checked})}
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm sm:text-base">Read Receipts</Label>
+                        <Label>Read Receipts</Label>
                         <Switch
                           checked={emailSettings.readReceipts}
                           onCheckedChange={(checked) => setEmailSettings({...emailSettings, readReceipts: checked})}
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm sm:text-base">Quantum Encryption</Label>
+                        <Label>Quantum Encryption</Label>
                         <Switch
                           checked={emailSettings.encryption}
                           onCheckedChange={(checked) => setEmailSettings({...emailSettings, encryption: checked})}
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm sm:text-base">Spam Filter</Label>
+                        <Label>Spam Filter</Label>
                         <Switch
                           checked={emailSettings.spamFilter}
                           onCheckedChange={(checked) => setEmailSettings({...emailSettings, spamFilter: checked})}
                         />
                       </div>
                     </div>
-                    <div className="space-y-3 sm:space-y-4">
+                    <div className="space-y-4">
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm sm:text-base">Notifications</Label>
+                        <Label>Notifications</Label>
                         <Switch
                           checked={emailSettings.notifications}
                           onCheckedChange={(checked) => setEmailSettings({...emailSettings, notifications: checked})}
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm sm:text-base">Sound Alerts</Label>
+                        <Label>Sound Alerts</Label>
                         <Switch
                           checked={emailSettings.soundAlerts}
                           onCheckedChange={(checked) => setEmailSettings({...emailSettings, soundAlerts: checked})}
                         />
                       </div>
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm sm:text-base">Desktop Notifications</Label>
+                        <Label>Desktop Notifications</Label>
                         <Switch
                           checked={emailSettings.desktopNotifications}
                           onCheckedChange={(checked) => setEmailSettings({...emailSettings, desktopNotifications: checked})}
@@ -470,27 +448,27 @@ const Settings3D: React.FC<Settings3DProps> = ({
 
           {/* Secret Code Tab */}
           {activeTab === 'secret-code' && (
-            <div className="p-4 sm:p-6 h-full overflow-y-auto space-y-3 sm:space-y-4">
-              <HolographicCard className="p-3 sm:p-4 md:p-6">
-                <CardHeader className="px-0 pt-0 pb-4">
-                  <CardTitle className="flex items-center space-x-2 text-base sm:text-lg md:text-xl">
-                    <Key className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="p-6 max-h-[60vh] overflow-y-auto space-y-4">
+              <HolographicCard className="p-4 md:p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+                    <Key className="w-5 h-5 text-primary" />
                     <span>Change Secret Code</span>
                   </CardTitle>
-                  <p className="text-xs sm:text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Change your secret code for enhanced security. You'll receive an automatic notification email.
                   </p>
                 </CardHeader>
                 <CardContent className="space-y-4 px-0 pb-0">
-                  <div className="space-y-3 sm:space-y-4">
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-sm sm:text-base">Current Secret Code</Label>
+                      <Label>Current Secret Code</Label>
                       <div className="relative">
                         <Input
                           type={showCurrentSecret ? "text" : "password"}
                           value={secretCodeSettings.currentSecretCode}
                           onChange={(e) => setSecretCodeSettings(prev => ({ ...prev, currentSecretCode: e.target.value }))}
-                          className="glass-surface border-primary/20 pr-10 text-sm sm:text-base"
+                          className="glass-surface border-primary/20 pr-10"
                           placeholder="Enter your current secret code"
                         />
                         <Button
@@ -499,19 +477,19 @@ const Settings3D: React.FC<Settings3DProps> = ({
                           className="absolute right-2 top-2 h-6 w-6"
                           onClick={() => setShowCurrentSecret(!showCurrentSecret)}
                         >
-                          {showCurrentSecret ? <EyeOff className="w-3 h-3 sm:w-4 sm:h-4" /> : <Eye className="w-3 h-3 sm:w-4 sm:h-4" />}
+                          {showCurrentSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-sm sm:text-base">New Secret Code</Label>
+                      <Label>New Secret Code</Label>
                       <div className="relative">
                         <Input
                           type={showNewSecret ? "text" : "password"}
                           value={secretCodeSettings.newSecretCode}
                           onChange={(e) => setSecretCodeSettings(prev => ({ ...prev, newSecretCode: e.target.value }))}
-                          className="glass-surface border-primary/20 pr-10 text-sm sm:text-base"
+                          className="glass-surface border-primary/20 pr-10"
                           placeholder="Enter your new secret code (min 10 chars)"
                         />
                         <Button
@@ -520,7 +498,7 @@ const Settings3D: React.FC<Settings3DProps> = ({
                           className="absolute right-2 top-2 h-6 w-6"
                           onClick={() => setShowNewSecret(!showNewSecret)}
                         >
-                          {showNewSecret ? <EyeOff className="w-3 h-3 sm:w-4 sm:h-4" /> : <Eye className="w-3 h-3 sm:w-4 sm:h-4" />}
+                          {showNewSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
                       </div>
                       {secretCodeSettings.newSecretCode && (
@@ -531,13 +509,13 @@ const Settings3D: React.FC<Settings3DProps> = ({
                     </div>
 
                     <div className="space-y-2">
-                      <Label className="text-sm sm:text-base">Confirm New Secret Code</Label>
+                      <Label>Confirm New Secret Code</Label>
                       <div className="relative">
                         <Input
                           type={showConfirmSecret ? "text" : "password"}
                           value={secretCodeSettings.confirmSecretCode}
                           onChange={(e) => setSecretCodeSettings(prev => ({ ...prev, confirmSecretCode: e.target.value }))}
-                          className="glass-surface border-primary/20 pr-10 text-sm sm:text-base"
+                          className="glass-surface border-primary/20 pr-10"
                           placeholder="Confirm your new secret code"
                         />
                         <Button
@@ -546,7 +524,7 @@ const Settings3D: React.FC<Settings3DProps> = ({
                           className="absolute right-2 top-2 h-6 w-6"
                           onClick={() => setShowConfirmSecret(!showConfirmSecret)}
                         >
-                          {showConfirmSecret ? <EyeOff className="w-3 h-3 sm:w-4 sm:h-4" /> : <Eye className="w-3 h-3 sm:w-4 sm:h-4" />}
+                          {showConfirmSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
                       </div>
                       {secretCodeSettings.confirmSecretCode && secretCodeSettings.newSecretCode !== secretCodeSettings.confirmSecretCode && (
@@ -564,10 +542,10 @@ const Settings3D: React.FC<Settings3DProps> = ({
                     </div>
                   </div>
 
-                  <div className="flex flex-col sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4">
+                  <div className="flex flex-col sm:flex-row justify-end gap-3 pt-4">
                     <Button 
                       variant="outline" 
-                      className="glass-hover text-xs sm:text-sm"
+                      className="glass-hover"
                       onClick={() => setSecretCodeSettings({
                         currentSecretCode: '',
                         newSecretCode: '',
@@ -579,37 +557,37 @@ const Settings3D: React.FC<Settings3DProps> = ({
                       Clear
                     </Button>
                     <Button 
-                      className="bg-gradient-primary hover:shadow-hover text-xs sm:text-sm"
+                      className="bg-gradient-primary hover:shadow-hover"
                       onClick={handleChangeSecretCode}
                       disabled={secretCodeSettings.isChanging || !secretCodeSettings.currentSecretCode || !secretCodeSettings.newSecretCode || !secretCodeSettings.confirmSecretCode}
                     >
-                      <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                      <Save className="w-4 h-4 mr-2" />
                       {secretCodeSettings.isChanging ? 'Changing...' : 'Change Secret Code'}
                     </Button>
                   </div>
                 </CardContent>
               </HolographicCard>
 
-              <HolographicCard className="p-3 sm:p-4 md:p-6">
-                <CardHeader className="px-0 pt-0 pb-4">
-                  <CardTitle className="text-sm sm:text-lg">Security Requirements</CardTitle>
+              <HolographicCard className="p-4 md:p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="text-lg">Security Requirements</CardTitle>
                 </CardHeader>
                 <CardContent className="px-0 pb-0">
-                  <div className="space-y-2 text-xs sm:text-sm text-muted-foreground">
+                  <div className="space-y-2 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
-                      {secretCodeSettings.newSecretCode.length >= 10 ? <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" /> : <XCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />}
+                      {secretCodeSettings.newSecretCode.length >= 10 ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
                       At least 10 characters long
                     </div>
                     <div className="flex items-center gap-2">
-                      {/[A-Z]/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" /> : <XCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />}
+                      {/[A-Z]/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
                       At least one uppercase letter
                     </div>
                     <div className="flex items-center gap-2">
-                      {/[a-z]/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" /> : <XCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />}
+                      {/[a-z]/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
                       At least one lowercase letter
                     </div>
                     <div className="flex items-center gap-2">
-                      {/\d/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 text-green-500" /> : <XCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-500" />}
+                      {/\d/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
                       At least one number
                     </div>
                   </div>
@@ -620,23 +598,23 @@ const Settings3D: React.FC<Settings3DProps> = ({
 
           {/* Security Settings */}
           {activeTab === 'security' && (
-            <div className="p-4 sm:p-6 h-full overflow-y-auto">
-              <HolographicCard className="p-3 sm:p-4 md:p-6">
-                <CardHeader className="px-0 pt-0 pb-4">
-                  <CardTitle className="flex items-center space-x-2 text-base sm:text-lg md:text-xl">
-                    <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+            <div className="p-6 max-h-[60vh] overflow-y-auto">
+              <HolographicCard className="p-4 md:p-6">
+                <CardHeader className="px-0 pt-0">
+                  <CardTitle className="flex items-center space-x-2 text-lg md:text-xl">
+                    <Shield className="w-5 h-5 text-primary" />
                     <span>Quantum Security</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4 px-0 pb-0">
                   <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label className="text-sm sm:text-base">Change Password</Label>
+                      <Label>Change Password</Label>
                       <div className="relative">
                         <Input
                           type={showPassword ? "text" : "password"}
                           placeholder="New password"
-                          className="glass-surface border-primary/20 pr-10 text-sm sm:text-base"
+                          className="glass-surface border-primary/20 pr-10"
                         />
                         <Button
                           variant="ghost"
@@ -644,35 +622,35 @@ const Settings3D: React.FC<Settings3DProps> = ({
                           className="absolute right-2 top-2 h-6 w-6"
                           onClick={() => setShowPassword(!showPassword)}
                         >
-                          {showPassword ? <EyeOff className="w-3 h-3 sm:w-4 sm:h-4" /> : <Eye className="w-3 h-3 sm:w-4 sm:h-4" />}
+                          {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
                       </div>
                     </div>
 
-                    <div className="space-y-3 sm:space-y-4">
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 glass-surface rounded-lg gap-2 sm:gap-3">
+                    <div className="space-y-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 glass-surface rounded-lg gap-3">
                         <div className="flex-1">
-                          <h4 className="font-medium text-sm sm:text-base">Two-Factor Authentication</h4>
-                          <p className="text-xs sm:text-sm text-muted-foreground">Enhanced security for your account</p>
+                          <h4 className="font-medium">Two-Factor Authentication</h4>
+                          <p className="text-sm text-muted-foreground">Enhanced security for your account</p>
                         </div>
-                        <Button className="bg-gradient-primary whitespace-nowrap text-xs sm:text-sm">Enable 2FA</Button>
+                        <Button className="bg-gradient-primary whitespace-nowrap">Enable 2FA</Button>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 glass-surface rounded-lg gap-2 sm:gap-3">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 glass-surface rounded-lg gap-3">
                         <div className="flex-1">
-                          <h4 className="font-medium text-sm sm:text-base">Quantum Key Exchange</h4>
-                          <p className="text-xs sm:text-sm text-muted-foreground">Ultimate encryption protection</p>
+                          <h4 className="font-medium">Quantum Key Exchange</h4>
+                          <p className="text-sm text-muted-foreground">Ultimate encryption protection</p>
                         </div>
-                        <Badge className="bg-green-500 whitespace-nowrap text-xs">Active</Badge>
+                        <Badge className="bg-green-500 whitespace-nowrap">Active</Badge>
                       </div>
 
-                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 sm:p-4 glass-surface rounded-lg gap-2 sm:gap-3">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 glass-surface rounded-lg gap-3">
                         <div className="flex-1">
-                          <h4 className="font-medium text-sm sm:text-base">Session Timeout</h4>
-                          <p className="text-xs sm:text-sm text-muted-foreground">Auto-logout after inactivity</p>
+                          <h4 className="font-medium">Session Timeout</h4>
+                          <p className="text-sm text-muted-foreground">Auto-logout after inactivity</p>
                         </div>
                         <Select defaultValue="30">
-                          <SelectTrigger className="w-20 sm:w-24 glass-surface text-xs sm:text-sm">
+                          <SelectTrigger className="w-24 glass-surface">
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -692,7 +670,7 @@ const Settings3D: React.FC<Settings3DProps> = ({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-between p-4 sm:p-6 border-t border-primary/20 gap-3 sm:gap-4 relative z-10 bg-gradient-to-t from-primary/5 to-transparent">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-6 border-t border-primary/20 gap-4 relative z-10 bg-gradient-to-t from-primary/5 to-transparent">
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-center sm:justify-start">
             <Button variant="outline" className="glass-hover text-xs sm:text-sm">
               <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
