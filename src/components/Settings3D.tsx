@@ -11,9 +11,9 @@ import {
   Settings, User, Palette, Server, Shield, Bell, 
   Signature, Globe, Database, Key, Eye, EyeOff,
   Save, RefreshCw, Trash2, Download, Upload, Zap,
-  XCircle, CheckCircle, ChevronRight, ChevronLeft
+  XCircle, CheckCircle, ChevronRight, ChevronLeft, X
 } from 'lucide-react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogClose } from '@/components/ui/dialog';
 import HolographicCard from '@/components/3D/HolographicCard';
 import FloatingIcon from '@/components/3D/FloatingIcon';
 import { toast } from 'sonner';
@@ -183,6 +183,12 @@ const Settings3D: React.FC<Settings3DProps> = ({
     setSelectedSection('');
   };
 
+  const handleClose = () => {
+    setActiveTab('list');
+    setSelectedSection('');
+    onClose();
+  };
+
   const NeuralNetworkBackground = () => (
     <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 opacity-20">
       {/* Neural network nodes */}
@@ -207,7 +213,7 @@ const Settings3D: React.FC<Settings3DProps> = ({
   );
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="
         max-w-6xl 
         max-h-[90vh] 
@@ -231,6 +237,12 @@ const Settings3D: React.FC<Settings3DProps> = ({
         sm:-translate-x-1/2
         sm:-translate-y-1/2
       " style={{background: 'var(--card-bg)', color: 'var(--text-primary)'}}>
+        {/* Close Button - Fixed positioning with high z-index */}
+        <DialogClose className="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none data-[state=open]:bg-accent data-[state=open]:text-muted-foreground z-50">
+          <X className="h-5 w-5 sm:h-6 sm:w-6 text-foreground" />
+          <span className="sr-only">Close</span>
+        </DialogClose>
+        
         <NeuralNetworkBackground />
         
         <DialogHeader className="border-b border-primary/20 pb-4 px-6 pt-6 bg-gradient-to-r from-primary/5 to-transparent relative z-10">
@@ -705,7 +717,7 @@ const Settings3D: React.FC<Settings3DProps> = ({
           </div>
           
           <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-center sm:justify-end">
-            <Button variant="outline" onClick={onClose} className="glass-hover text-xs sm:text-sm">
+            <Button variant="outline" onClick={handleClose} className="glass-hover text-xs sm:text-sm">
               Cancel
             </Button>
             <Button className="bg-gradient-primary hover:shadow-hover text-xs sm:text-sm">
