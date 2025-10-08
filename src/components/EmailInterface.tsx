@@ -304,6 +304,8 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
           currentFolder={currentFolder}
           onFolderChange={handleFolderChange}
           unreadCount={unreadCount}
+          onSettingsClick={() => setShowSettings(true)}
+          onLabelsClick={() => toast.info("Labels management coming soon")}
         />
       </div>
 
@@ -376,6 +378,8 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
             currentFolder={currentFolder}
             onFolderChange={handleFolderChange}
             unreadCount={unreadCount}
+            onSettingsClick={() => setShowSettings(true)}
+            onLabelsClick={() => toast.info("Labels management coming soon")}
           />
         </div>
 
@@ -477,14 +481,6 @@ const EmailInterface: React.FC<EmailInterfaceProps> = ({ username, authToken, on
             </Button>
             <Button variant="ghost" size="icon" className="glass-hover">
               <Bell className="w-4 h-4" />
-            </Button>
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={() => setShowSettings(true)}
-              className="glass-hover hidden md:inline-flex"
-            >
-              <Settings className="w-4 h-4" />
             </Button>
           </div>
         </div>

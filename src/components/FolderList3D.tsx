@@ -4,13 +4,15 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { 
   Inbox, Send, FileText, Trash2, Archive, Star, 
-  Shield, AlertTriangle, Folder, Sparkles 
+  Shield, AlertTriangle, Folder, Sparkles, Settings, Tag
 } from 'lucide-react';
 
 interface FolderList3DProps {
   currentFolder: string;
   onFolderChange: (folder: string) => void;
   unreadCount: number;
+  onSettingsClick?: () => void;
+  onLabelsClick?: () => void;
 }
 
 interface FolderItem {
@@ -24,7 +26,9 @@ interface FolderItem {
 const FolderList3D: React.FC<FolderList3DProps> = ({ 
   currentFolder, 
   onFolderChange, 
-  unreadCount 
+  unreadCount,
+  onSettingsClick,
+  onLabelsClick
 }) => {
   const folders: FolderItem[] = [
     { 
@@ -67,6 +71,28 @@ const FolderList3D: React.FC<FolderList3DProps> = ({
           Folders
         </h3>
         <Sparkles className="w-4 h-4 text-primary animate-pulse" />
+      </div>
+      
+      {/* Settings and Labels buttons */}
+      <div className="flex items-center justify-between mb-4 space-x-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onLabelsClick}
+          className="w-1/2 glass-hover flex items-center justify-center"
+        >
+          <Tag className="w-4 h-4 mr-2" />
+          Labels
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onSettingsClick}
+          className="w-1/2 glass-hover flex items-center justify-center"
+        >
+          <Settings className="w-4 h-4 mr-2" />
+          Settings
+        </Button>
       </div>
       
       {folders.map((folder, index) => {
