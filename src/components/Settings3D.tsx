@@ -11,11 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { 
   Settings, User, Palette, Server, Shield, Bell, 
   Signature, Globe, Database, Key, Eye, EyeOff,
-  Save, RefreshCw, Trash2, Download, Upload, Zap
+  Save, RefreshCw, Trash2, Download, Upload, Zap,
+  XCircle, CheckCircle
 } from 'lucide-react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import HolographicCard from '@/components/3D/HolographicCard';
 import FloatingIcon from '@/components/3D/FloatingIcon';
+import { toast } from 'sonner';
+import { qemailApi } from '@/services/api';
 
 interface Settings3DProps {
   isOpen: boolean;
@@ -49,16 +52,119 @@ const Settings3D: React.FC<Settings3DProps> = ({
     desktopNotifications: true
   });
 
-  const [serverSettings, setServerSettings] = useState({
-    smtpServer: 'smtp.qssn.email',
-    smtpPort: '587',
-    imapServer: 'imap.qssn.email',
-    imapPort: '993',
-    encryption: 'TLS',
-    authentication: 'OAuth2'
+  const [secretCodeSettings, setSecretCodeSettings] = useState({
+    currentSecretCode: '',
+    newSecretCode: '',
+    confirmSecretCode: '',
+    isVerifying: false,
+    isChanging: false
   });
 
   const [showPassword, setShowPassword] = useState(false);
+  const [showCurrentSecret, setShowCurrentSecret] = useState(false);
+  const [showNewSecret, setShowNewSecret] = useState(false);
+  const [showConfirmSecret, setShowConfirmSecret] = useState(false);
+
+  const validateSecretCode = (code: string) => {
+    if (code.length < 10) {
+      return { isValid: false, message: 'Secret code must be at least 10 characters long' };
+    }
+    if (!/[A-Z]/.test(code)) {
+      return { isValid: false, message: 'Secret code must contain at least one uppercase letter' };
+    }
+    if (!/[a-z]/.test(code)) {
+      return { isValid: false, message: 'Secret code must contain at least one lowercase letter' };
+    }
+    if (!/\d/.test(code)) {
+      return { isValid: false, message: 'Secret code must contain at least one number' };
+    }
+    return { isValid: true, message: 'Valid secret code' };
+  };
+
+  const handleVerifySecretCode = async () => {
+    if (!secretCodeSettings.currentSecretCode) {
+      toast.error('Please enter your current secret code');
+      return;
+    }
+
+    setSecretCodeSettings(prev => ({ ...prev, isVerifying: true }));
+
+    try {
+      // Get current username from localStorage or profile
+      const currentUsername = localStorage.getItem('qos-username') || profile.username.split('@')[0];
+      
+      // Verify the current secret code
+      await qemailApi.verifySecretCode(currentUsername, secretCodeSettings.currentSecretCode);
+      
+      toast.success('Current secret code verified successfully');
+      setSecretCodeSettings(prev => ({ ...prev, isVerifying: false }));
+    } catch (error: any) {
+      toast.error(`Verification failed: ${error.message}`);
+      setSecretCodeSettings(prev => ({ ...prev, isVerifying: false }));
+    }
+  };
+
+  const handleChangeSecretCode = async () => {
+    if (!secretCodeSettings.currentSecretCode || !secretCodeSettings.newSecretCode || !secretCodeSettings.confirmSecretCode) {
+      toast.error('Please fill in all fields');
+      return;
+    }
+
+    if (secretCodeSettings.newSecretCode !== secretCodeSettings.confirmSecretCode) {
+      toast.error('New secret codes do not match');
+      return;
+    }
+
+    const validation = validateSecretCode(secretCodeSettings.newSecretCode);
+    if (!validation.isValid) {
+      toast.error(validation.message);
+      return;
+    }
+
+    setSecretCodeSettings(prev => ({ ...prev, isChanging: true }));
+
+    try {
+      // Change secret code using the new API method
+      const changeResponse = await qemailApi.changeSecretCode(
+        secretCodeSettings.currentSecretCode,
+        secretCodeSettings.newSecretCode
+      );
+
+      if (!changeResponse.success) {
+        toast.error(changeResponse.message || 'Failed to change secret code');
+        setSecretCodeSettings(prev => ({ ...prev, isChanging: false }));
+        return;
+      }
+
+      // Send security notification
+      await sendSecurityNotification('Secret Code Changed', 'Your secret code has been successfully changed.');
+
+      toast.success('Secret code changed successfully!');
+      setSecretCodeSettings({
+        currentSecretCode: '',
+        newSecretCode: '',
+        confirmSecretCode: '',
+        isVerifying: false,
+        isChanging: false
+      });
+    } catch (error: any) {
+      toast.error(`Change failed: ${error.message}`);
+      setSecretCodeSettings(prev => ({ ...prev, isChanging: false }));
+    }
+  };
+
+  const sendSecurityNotification = async (subject: string, message: string) => {
+    try {
+      const currentUsername = localStorage.getItem('qos-username') || profile.username.split('@')[0];
+      
+      // Use the new security notification API
+      await qemailApi.sendSecurityNotification('secret_code_changed', subject, message);
+      
+      console.log('Security notification sent successfully');
+    } catch (error) {
+      console.error('Failed to send security notification:', error);
+    }
+  };
 
   const themes = [
     { id: 'default', name: 'Default', preview: 'bg-gradient-to-r from-blue-800 to-indigo-900' },
@@ -94,9 +200,9 @@ const Settings3D: React.FC<Settings3DProps> = ({
               <Bell className="w-4 h-4 mr-2" />
               Email
             </TabsTrigger>
-            <TabsTrigger value="server" className="glass-hover">
-              <Server className="w-4 h-4 mr-2" />
-              Server
+            <TabsTrigger value="secret-code" className="glass-hover">
+              <Key className="w-4 h-4 mr-2" />
+              Secret Code
             </TabsTrigger>
             <TabsTrigger value="security" className="glass-hover">
               <Shield className="w-4 h-4 mr-2" />
@@ -285,80 +391,148 @@ const Settings3D: React.FC<Settings3DProps> = ({
               </HolographicCard>
             </TabsContent>
 
-            {/* Server Settings */}
-            <TabsContent value="server" className="space-y-6">
+            {/* Secret Code Tab */}
+            <TabsContent value="secret-code" className="space-y-6">
               <HolographicCard className="p-6">
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
-                    <Server className="w-5 h-5 text-primary" />
-                    <span>Server Configuration</span>
+                    <Key className="w-5 h-5 text-primary" />
+                    <span>Change Secret Code</span>
                   </CardTitle>
+                  <p className="text-sm text-muted-foreground">
+                    Change your secret code for enhanced security. You'll receive an automatic notification email.
+                  </p>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-4">
                     <div className="space-y-2">
-                      <Label>SMTP Server</Label>
-                      <Input
-                        value={serverSettings.smtpServer}
-                        onChange={(e) => setServerSettings({...serverSettings, smtpServer: e.target.value})}
-                        className="glass-surface border-primary/20"
-                      />
+                      <Label>Current Secret Code</Label>
+                      <div className="relative">
+                        <Input
+                          type={showCurrentSecret ? "text" : "password"}
+                          value={secretCodeSettings.currentSecretCode}
+                          onChange={(e) => setSecretCodeSettings(prev => ({ ...prev, currentSecretCode: e.target.value }))}
+                          className="glass-surface border-primary/20 pr-10"
+                          placeholder="Enter your current secret code"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 h-6 w-6"
+                          onClick={() => setShowCurrentSecret(!showCurrentSecret)}
+                        >
+                          {showCurrentSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
+                      </div>
                     </div>
+
                     <div className="space-y-2">
-                      <Label>SMTP Port</Label>
-                      <Input
-                        value={serverSettings.smtpPort}
-                        onChange={(e) => setServerSettings({...serverSettings, smtpPort: e.target.value})}
-                        className="glass-surface border-primary/20"
-                      />
+                      <Label>New Secret Code</Label>
+                      <div className="relative">
+                        <Input
+                          type={showNewSecret ? "text" : "password"}
+                          value={secretCodeSettings.newSecretCode}
+                          onChange={(e) => setSecretCodeSettings(prev => ({ ...prev, newSecretCode: e.target.value }))}
+                          className="glass-surface border-primary/20 pr-10"
+                          placeholder="Enter your new secret code (min 10 chars)"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 h-6 w-6"
+                          onClick={() => setShowNewSecret(!showNewSecret)}
+                        >
+                          {showNewSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                      {secretCodeSettings.newSecretCode && (
+                        <div className="text-xs text-muted-foreground">
+                          {validateSecretCode(secretCodeSettings.newSecretCode).message}
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Confirm New Secret Code</Label>
+                      <div className="relative">
+                        <Input
+                          type={showConfirmSecret ? "text" : "password"}
+                          value={secretCodeSettings.confirmSecretCode}
+                          onChange={(e) => setSecretCodeSettings(prev => ({ ...prev, confirmSecretCode: e.target.value }))}
+                          className="glass-surface border-primary/20 pr-10"
+                          placeholder="Confirm your new secret code"
+                        />
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-2 top-2 h-6 w-6"
+                          onClick={() => setShowConfirmSecret(!showConfirmSecret)}
+                        >
+                          {showConfirmSecret ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                        </Button>
+                      </div>
+                      {secretCodeSettings.confirmSecretCode && secretCodeSettings.newSecretCode !== secretCodeSettings.confirmSecretCode && (
+                        <div className="text-xs text-red-500 flex items-center gap-1">
+                          <XCircle className="h-3 w-3" />
+                          Secret codes do not match
+                        </div>
+                      )}
+                      {secretCodeSettings.confirmSecretCode && secretCodeSettings.newSecretCode === secretCodeSettings.confirmSecretCode && (
+                        <div className="text-xs text-green-500 flex items-center gap-1">
+                          <CheckCircle className="h-3 w-3" />
+                          Secret codes match
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>IMAP Server</Label>
-                      <Input
-                        value={serverSettings.imapServer}
-                        onChange={(e) => setServerSettings({...serverSettings, imapServer: e.target.value})}
-                        className="glass-surface border-primary/20"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>IMAP Port</Label>
-                      <Input
-                        value={serverSettings.imapPort}
-                        onChange={(e) => setServerSettings({...serverSettings, imapPort: e.target.value})}
-                        className="glass-surface border-primary/20"
-                      />
-                    </div>
+                  <div className="flex justify-end gap-3">
+                    <Button 
+                      variant="outline" 
+                      className="glass-hover"
+                      onClick={() => setSecretCodeSettings({
+                        currentSecretCode: '',
+                        newSecretCode: '',
+                        confirmSecretCode: '',
+                        isVerifying: false,
+                        isChanging: false
+                      })}
+                    >
+                      Clear
+                    </Button>
+                    <Button 
+                      className="bg-gradient-primary hover:shadow-hover"
+                      onClick={handleChangeSecretCode}
+                      disabled={secretCodeSettings.isChanging || !secretCodeSettings.currentSecretCode || !secretCodeSettings.newSecretCode || !secretCodeSettings.confirmSecretCode}
+                    >
+                      <Save className="w-4 h-4 mr-2" />
+                      {secretCodeSettings.isChanging ? 'Changing...' : 'Change Secret Code'}
+                    </Button>
                   </div>
+                </CardContent>
+              </HolographicCard>
 
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Encryption Method</Label>
-                      <Select value={serverSettings.encryption} onValueChange={(value) => setServerSettings({...serverSettings, encryption: value})}>
-                        <SelectTrigger className="glass-surface border-primary/20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="TLS">TLS</SelectItem>
-                          <SelectItem value="SSL">SSL</SelectItem>
-                          <SelectItem value="STARTTLS">STARTTLS</SelectItem>
-                        </SelectContent>
-                      </Select>
+              <HolographicCard className="p-6">
+                <CardHeader>
+                  <CardTitle className="text-lg">Security Requirements</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                      {secretCodeSettings.newSecretCode.length >= 10 ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                      At least 10 characters long
                     </div>
-                    <div className="space-y-2">
-                      <Label>Authentication</Label>
-                      <Select value={serverSettings.authentication} onValueChange={(value) => setServerSettings({...serverSettings, authentication: value})}>
-                        <SelectTrigger className="glass-surface border-primary/20">
-                          <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="OAuth2">OAuth 2.0</SelectItem>
-                          <SelectItem value="Password">Password</SelectItem>
-                          <SelectItem value="XOAUTH2">XOAUTH2</SelectItem>
-                        </SelectContent>
-                      </Select>
+                    <div className="flex items-center gap-2">
+                      {/[A-Z]/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                      At least one uppercase letter
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/[a-z]/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                      At least one lowercase letter
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {/\d/.test(secretCodeSettings.newSecretCode) ? <CheckCircle className="h-4 w-4 text-green-500" /> : <XCircle className="h-4 w-4 text-red-500" />}
+                      At least one number
                     </div>
                   </div>
                 </CardContent>

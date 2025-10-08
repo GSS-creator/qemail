@@ -187,7 +187,7 @@ class QEmailApiService {
     return data
   }
 
-  async register(payload: { username: string; password: string; interests?: string }): Promise<{ token: string; user: any }> {
+  async register(payload: { username: string; password: string; interests?: string; secretCode?: string }): Promise<{ token: string; user: any }> {
     // Generate QSSN email automatically like the Python backend does
     const qssnEmail = `${payload.username}@gss-tec.qssn`;
     
@@ -208,7 +208,8 @@ class QEmailApiService {
         email: qssnEmail,
         password: payload.password,
         first_name: payload.username,
-        interests: payload.interests
+        interests: payload.interests,
+        secret_code: payload.secretCode
       })
     })
     
@@ -300,6 +301,24 @@ class QEmailApiService {
     return responseData
   }
 
+  async verifySecretCode(username: string, secretCode: string): Promise<any> {
+    const headers = this.getHeaders(true)
+    delete headers['Authorization']
+
+    const res = await fetch(`${this.baseUrl}/api/auth/verify-secret-code`, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ username, secret_code: secretCode })
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Secret code verification failed' }))
+      throw new Error(errorData.error || 'Secret code verification failed')
+    }
+
+    return res.json()
+  }
+
   async resetPassword(username: string, otp: string, newPassword: string): Promise<any> {
     const headers = this.getHeaders(true)
     delete headers['Authorization']
@@ -316,6 +335,41 @@ class QEmailApiService {
     if (!res.ok) {
       const errorData = await res.json().catch(() => ({ error: 'Password reset failed' }))
       throw new Error(errorData.error || 'Password reset failed')
+    }
+
+    return res.json()
+  }
+
+  async changeSecretCode(currentSecretCode: string, newSecretCode: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/api/auth/change-secret-code`, {
+      method: 'POST',
+      headers: this.getHeaders(false),
+      body: JSON.stringify({ current_secret_code: currentSecretCode, new_secret_code: newSecretCode })
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Secret code change failed' }))
+      throw new Error(errorData.error || 'Secret code change failed')
+    }
+
+    return res.json()
+  }
+
+  async sendSecurityNotification(notificationType: string, recipientEmail: string, subject?: string, message?: string): Promise<any> {
+    const res = await fetch(`${this.baseUrl}/api/security/notification`, {
+      method: 'POST',
+      headers: this.getHeaders(false),
+      body: JSON.stringify({ 
+        notification_type: notificationType, 
+        recipient_email: recipientEmail,
+        subject: subject,
+        message: message 
+      })
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({ error: 'Security notification failed' }))
+      throw new Error(errorData.error || 'Security notification failed')
     }
 
     return res.json()

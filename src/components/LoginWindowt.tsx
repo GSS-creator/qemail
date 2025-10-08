@@ -92,25 +92,11 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
             const response = await qemailApi.recoverEmail(recoveryUsername, password)
             console.log('Email recovery successful:', response)
             toast.success(`Your QSSN email is: ${response.email}`);
-            
-            // Send automatic security notification using new API
-            try {
-              await qemailApi.sendSecurityNotification(
-                'email_recovery', 
-                response.email,
-                'QSSN Email Recovery Successful',
-                `Your QSSN email address has been successfully recovered: ${response.email}. If you did not request this recovery, please contact support immediately.`
-              );
-              console.log('QSSN email recovery notification sent successfully');
-            } catch (emailError) {
-              console.error('Failed to send QSSN email recovery notification:', emailError);
-            }
           } catch (error: any) {
             console.error('Email recovery error:', error);
             console.error('Error message:', error.message);
             toast.error(`Email recovery failed: ${error.message}`);
-            setIsLoading(false);
-            return;
+            return; // Don't exit recovery mode on error
           }
         } else {
           // Password Recovery with Secret Code and OTP
@@ -135,12 +121,10 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
               
               // Move to OTP step
               setSecretCodeStep(true);
-              setIsLoading(false);
               return;
             } catch (error: any) {
               console.error('Secret code verification error:', error);
               toast.error(`Secret code verification failed: ${error.message}`);
-              setIsLoading(false);
               return;
             }
           } else if (secretCodeStep && !otpStep) {
@@ -166,12 +150,10 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                 setOtpStep(true);
                 toast.success('OTP sent to your registered email!');
               }
-              setIsLoading(false);
               return;
             } catch (error: any) {
               console.error('Password reset request error:', error);
               toast.error(`Password reset request failed: ${error.message}`);
-              setIsLoading(false);
               return;
             }
           } else if (otpStep) {
@@ -182,13 +164,11 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
             
             if (newPassword !== confirmPassword) {
               toast.error('Passwords do not match!');
-              setIsLoading(false);
               return;
             }
             
             if (newPassword.length < 6) {
               toast.error('Password must be at least 6 characters long!');
-              setIsLoading(false);
               return;
             }
             
@@ -196,20 +176,6 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
               const response = await qemailApi.resetPassword(resetUsername, otpCode, newPassword)
               console.log('Password reset successful:', response)
               toast.success('Password reset successful! Please login with your new password.');
-              
-              // Send automatic security notification using new API
-              try {
-                const userEmail = `${resetUsername}@gss-tec.qssn`;
-                await qemailApi.sendSecurityNotification(
-                  'password_reset',
-                  userEmail,
-                  'Password Reset Successful',
-                  'Your password has been successfully reset for your QSSN email account. If you did not make this change, please contact support immediately.'
-                );
-                console.log('Password reset notification email sent successfully');
-              } catch (emailError) {
-                console.error('Failed to send password reset notification email:', emailError);
-              }
               
               // Reset all recovery states and return to login
               setIsRecoveryMode(false);
@@ -223,18 +189,15 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
               setRecoveryEmail('');
               setRecoverySecretCode('');
               setIsLogin(true);
-              setIsLoading(false);
               return;
             } catch (error: any) {
               console.error('Password reset error:', error);
               toast.error(`Password reset failed: ${error.message}`);
-              setIsLoading(false);
               return;
             }
           }
         }
         setIsRecoveryMode(false);
-        setIsLoading(false);
         return;
       }
       
@@ -307,13 +270,6 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
   const enterRecoveryMode = (type: 'password' | 'email') => {
     setRecoveryType(type);
     setIsRecoveryMode(true);
-    setSecretCodeStep(false);
-    setOtpStep(false);
-    setOtpCode('');
-    setNewPassword('');
-    setConfirmPassword('');
-    setResetUsername('');
-    setShowOtpDialog(false);
   };
 
   const exitRecoveryMode = () => {
@@ -421,8 +377,8 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                     <p className="text-sm text-muted-foreground mt-2">
                       {recoveryType === 'password' ? 
                         (otpStep ? 'Enter the OTP and your new password' : 
-                         secretCodeStep ? 'Enter your QSSN email to receive OTP' : 
-                         'Enter your username and secret code to verify identity')
+                         secretCodeStep ? 'Enter the OTP sent to your email' : 
+                         'Enter your username, secret code, and qemail')
                         : 'Enter your username and password to recover your QSSN email address'
                       }
                     </p>
@@ -433,11 +389,6 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                       <div className="space-y-4">
                         {!secretCodeStep && !otpStep && (
                           <>
-                            <div className="text-center p-4 bg-slate-800/50 rounded-lg border border-primary/20">
-                              <p className="text-sm text-muted-foreground">
-                                Enter your username and secret code to verify your identity
-                              </p>
-                            </div>
                             <div className="relative group">
                               <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                               <Input
@@ -467,32 +418,11 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                                 {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                               </button>
                             </div>
-                          </>
-                        )}
-                        {secretCodeStep && !otpStep && (
-                          <>
-                            <div className="text-center p-4 bg-slate-800/50 rounded-lg border border-primary/20">
-                              <p className="text-sm text-muted-foreground">
-                                Secret code verified! Enter your QSSN email to receive OTP
-                              </p>
-                            </div>
-                            <div className="relative group">
-                              <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
-                              <Input
-                                type="text"
-                                placeholder="Username"
-                                value={recoveryUsername}
-                                onChange={(e) => setRecoveryUsername(e.target.value)}
-                                className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow login-input"
-                                required
-                                disabled
-                              />
-                            </div>
                             <div className="relative group">
                               <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground group-focus-within:text-secondary transition-colors" />
                               <Input
                                 type="email"
-                                placeholder="QSSN Email"
+                                placeholder="Qemail"
                                 value={recoveryEmail}
                                 onChange={(e) => setRecoveryEmail(e.target.value)}
                                 className="pl-10 glass-surface border-secondary/20 focus:border-secondary focus:shadow-glow login-input"
@@ -501,13 +431,23 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                             </div>
                           </>
                         )}
+                        {secretCodeStep && !otpStep && (
+                          <>
+                            <div className="relative group">
+                              <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+                              <Input
+                                type="text"
+                                placeholder="Enter OTP Code"
+                                value={otpCode}
+                                onChange={(e) => setOtpCode(e.target.value)}
+                                className="pl-10 glass-surface border-primary/20 focus:border-primary focus:shadow-glow login-input"
+                                required
+                              />
+                            </div>
+                          </>
+                        )}
                         {otpStep && (
                           <>
-                            <div className="text-center p-4 bg-slate-800/50 rounded-lg border border-primary/20">
-                              <p className="text-sm text-muted-foreground">
-                                Enter the OTP code and your new password
-                              </p>
-                            </div>
                             <div className="relative group">
                               <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
                               <Input
@@ -554,8 +494,8 @@ const LoginWindow: React.FC<LoginWindowProps> = ({ onLogin }) => {
                           {isLoading ? (
                             <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white" />
                           ) : (
-                            !secretCodeStep && !otpStep ? 'Verify Secret Code' :
-                            secretCodeStep && !otpStep ? 'Send OTP' :
+                            !secretCodeStep && !otpStep ? 'Send OTP' :
+                            secretCodeStep && !otpStep ? 'Verify OTP' :
                             'Reset Password'
                           )}
                         </Button>
